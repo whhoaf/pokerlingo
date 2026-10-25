@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pokerlingo PRD v0.1: summary for sign-off</title>
+<style>
+  :root{
+    --paper:#f5f2ea; --ink:#1c1c1a; --muted:#5d5b55; --line:#e2ddd0;
+    --felt:#1f6b4a; --felt-soft:#e3efe8; --red:#b3261e; --red-soft:#f8e4e1;
+    --gold:#9a6b00; --gold-soft:#f6ecd2; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  main{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+  a{color:var(--felt)}
+  .kicker{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+  h1{font-size:30px;line-height:1.15;margin:0 0 10px}
+  h2{font-size:20px;margin:0 0 12px;display:flex;gap:8px;align-items:baseline}
+  h2 .no{font-size:13px;color:var(--muted);font-weight:600}
+  section{margin:28px 0 0}
+  .hero{background:var(--felt);color:#fff;border-radius:18px;padding:22px 18px 20px;position:relative;overflow:hidden}
+  .hero .kicker{color:#cfe6da}
+  .hero p{margin:0 0 14px;color:#eaf4ee}
+  .hero .suits{font-size:22px;opacity:.35;letter-spacing:6px;margin:0 0 6px;line-height:1}
+  .hero .kicker .date{display:block}
+  .jump{display:inline-block;background:#fff;color:var(--felt);font-weight:700;text-decoration:none;
+    padding:9px 14px;border-radius:999px;font-size:15px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 14px 12px;margin:0 0 10px}
+  .card h3{margin:0 0 6px;font-size:16px}
+  .card p{margin:0;color:var(--muted);font-size:15px}
+  .ok,.no-mark{font-weight:700}
+  .ok{color:var(--felt)} .no-mark{color:var(--red)}
+  .us{border:2px solid var(--felt);background:var(--felt-soft)}
+  ul.marks{list-style:none;margin:6px 0 0;padding:0;font-size:15px}
+  ul.marks li{margin:2px 0}
+  .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px}
+  .chip b{display:block;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+  .chain{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-size:15px;display:flex;gap:10px;align-items:flex-start}
+  .step .n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--felt);color:#fff;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:14px}
+  .arrow{text-align:center;color:var(--felt);font-size:18px;line-height:1;padding:3px 0}
+  .timer{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px}
+  .timer .big{font-size:34px;font-weight:800;color:var(--felt);font-variant-numeric:tabular-nums}
+  .timer p{margin:0;font-size:15px;color:var(--muted)}
+  .note{background:var(--gold-soft);border-radius:12px;padding:10px 12px;font-size:15px;margin:10px 0 0}
+  .areas{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+  .area{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .area .count{font-size:28px;font-weight:800;color:var(--felt);line-height:1}
+  .area h3{margin:6px 0 4px;font-size:16px}
+  .area p{margin:0;font-size:14px;color:var(--muted)}
+  .area details{margin-top:8px}
+  .area ol{margin:6px 0 0;padding-left:18px;font-size:14px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .stat .v{font-size:24px;font-weight:800;color:var(--felt);line-height:1.1}
+  .stat p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+  .two{display:grid;grid-template-columns:1fr;gap:10px}
+  .list{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .list h3{margin:0 0 6px;font-size:16px}
+  .list ul{margin:0;padding-left:18px;font-size:15px}
+  details{font-size:14px;color:var(--muted)}
+  details summary{cursor:pointer;color:var(--felt);font-weight:600;font-size:14px}
+  details p{margin:6px 0 0}
+  .why{margin-top:8px}
+  .decision{background:var(--card);border:2px solid var(--gold);border-radius:14px;padding:14px;margin:0 0 10px}
+  .decision .num{display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--gold);color:#fff;
+    font-weight:800;align-items:center;justify-content:center;margin-right:8px}
+  .decision h3{margin:0 0 8px;font-size:17px;display:flex;align-items:center}
+  .opt{display:block;background:var(--gold-soft);border-radius:10px;padding:8px 10px;margin:6px 0 0;font-size:15px}
+  .opt b{color:var(--gold)}
+  ol.next{padding-left:20px;font-size:15px;margin:0}
+  ol.next li{margin:4px 0}
+  footer{margin-top:32px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+  footer ul{padding-left:18px}
+  footer li{margin:3px 0;overflow-wrap:anywhere}
+  @media (min-width:640px){
+    h1{font-size:36px}
+    .two{grid-template-columns:1fr 1fr}
+    .areas{grid-template-columns:1fr 1fr 1fr 1fr}
+    .stats{grid-template-columns:repeat(4,1fr)}
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <div class="suits" aria-hidden="true">&spades;&hearts;&diams;&clubs;</div>
+  <p class="kicker">pokerlingo &middot; PRD v0.1 &middot; for sign-off <span class="date">25 Oct 2026</span></p>
+  <h1>Learn casual Hold'em in 10 minutes a day</h1>
+  <p>Fresh questions, graded by the app, each skill brought back just before you would forget it.</p>
+  <a class="jump" href="#decisions">3 decisions for you &darr;</a>
+</header>
+
+<section id="why">
+  <h2><span class="no">01</span> Why build it</h2>
+  <div class="card">
+    <h3>Lesson apps</h3>
+    <p>Poker Coach, Poker Skill</p>
+    <ul class="marks"><li><span class="ok">&#10003;</span> Short lessons and drills</li><li><span class="no-mark">&#10007;</span> No spaced review found</li></ul>
+  </div>
+  <div class="card">
+    <h3>Range trainers</h3>
+    <p>Forge.poker, GTO Poker Trainer: Preflop</p>
+    <ul class="marks"><li><span class="ok">&#10003;</span> Spaced review</li><li><span class="no-mark">&#10007;</span> Preflop only, solver play for online games</li></ul>
+  </div>
+  <div class="card us">
+    <h3>pokerlingo</h3>
+    <ul class="marks"><li><span class="ok">&#10003;</span> Spaced review across 4 skill areas</li><li><span class="ok">&#10003;</span> Advice for home cash games</li></ul>
+  </div>
+  <details class="why"><summary>Why?</summary>
+    <p>Poker Coach has 14 units of short drills (<a href="https://pokercoach.app/">pokercoach.app</a>). Poker Skill offers free lessons, a daily puzzle and coached games against AI, per its makers' own <a href="https://www.pokerskill.com/blog/poker-trainer-app-that-isnt-expensive/">comparison post</a>, which also lists GTO Poker Trainer: Preflop at $69.99 a year. Neither lesson app mentions spaced repetition on the pages read. The survey covered landing pages and comparison posts only.</p>
+  </details>
+</section>
+
+<section id="locked">
+  <h2><span class="no">02</span> Already decided</h2>
+  <div class="chips">
+    <div class="chip"><b>Who</b>Just you</div>
+    <div class="chip"><b>Device</b>iPhone, Home Screen</div>
+    <div class="chip"><b>Hosting</b>GitHub Pages, free</div>
+    <div class="chip"><b>Data</b>On the phone, offline</div>
+    <div class="chip"><b>Game</b>Cash, 6 to 9 players</div>
+    <div class="chip"><b>Daily</b>10 minutes</div>
+    <div class="chip"><b>Content</b>29 skills, 4 areas</div>
+    <div class="chip"><b>Bet sizing</b>Rule-based only</div>
+  </div>
+</section>
+
+<section id="session">
+  <h2><span class="no">03</span> A day's session</h2>
+  <div class="timer"><div class="big">10:00</div><p>One fixed session. When the timer hits zero, the current question finishes.</p></div>
+  <div class="chain">
+    <div class="step"><span class="n">1</span><span>Reviews due, the ones you are closest to forgetting first</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">2</span><span>Missed one? It comes back 2 to 4 questions later, with a new hand</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">3</span><span>Time left? Up to 2 new skills</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">4</span><span>Summary and streak</span></div>
+  </div>
+  <div class="note">Missed a week? Reviews come first. New skills wait until the pile is cleared.</div>
+</section>
+
+<section id="grading">
+  <h2><span class="no">04</span> How one question works</h2>
+  <div class="chain">
+    <div class="step"><span class="n">1</span><span>A fresh hand is dealt: new cards, pot and bet</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">2</span><span>You tap an answer or type a number</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">3</span><span>The app grades it and shows why</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">4</span><span>The scheduler sets the next review date</span></div>
+  </div>
+  <div class="note">You never grade yourself. Right counts as Good, wrong as Again.</div>
+  <details class="why"><summary>Why?</summary>
+    <p>A rival trainer's write-up names the two ways flashcards fail at poker: flipping a card lets you recognise a chart instead of rebuilding it, and self-grading lets you over-rate half-right answers (<a href="https://forge.poker/en/blog/anki-flashcards-poker-ranges">Forge</a>). The FSRS tutorial says grading with only Again and Good works fine, and its authors found it slightly more accurate (<a href="https://github.com/open-spaced-repetition/fsrs4anki/blob/main/docs/tutorial.md">FSRS tutorial</a>). Scheduling uses <a href="https://github.com/open-spaced-repetition/ts-fsrs">ts-fsrs</a>; hands are evaluated with <a href="https://github.com/goldfire/pokersolver">pokersolver</a>. Both are MIT licensed.</p>
+  </details>
+</section>
+
+<section id="skills">
+  <h2><span class="no">05</span> What you'll learn</h2>
+  <div class="areas">
+    <div class="area"><div class="count">9</div><h3>Hands by seat</h3><p>Open or fold, limpers, one raise, big blind</p>
+      <details><summary>All 9</summary><ol>
+        <li>Name the seats, 6 to 9 players</li><li>Early seats</li><li>Lojack and hijack</li><li>Cutoff and button</li><li>Small blind, folded to you</li><li>Facing limpers</li><li>Facing one raise</li><li>Big blind facing a raise</li><li>Same hand, other table size</li></ol></details></div>
+    <div class="area"><div class="count">9</div><h3>Outs and pot odds</h3><p>Count outs, rule of 2 and 4, price of a call</p>
+      <details><summary>All 9</summary><ol>
+        <li>Flush draw</li><li>Open-ended straight draw</li><li>Gutshot</li><li>Overcards</li><li>Combination draws</li><li>Rule of 2 and 4</li><li>Price of a call</li><li>Bet size to required equity</li><li>Call or fold with a draw</li></ol></details></div>
+    <div class="area"><div class="count">6</div><h3>Reading the board</h3><p>Best hand, who wins, the nuts</p>
+      <details><summary>All 6</summary><ol>
+        <li>Best five of seven cards</li><li>Who wins at showdown</li><li>Kickers and split pots</li><li>The nuts</li><li>Flush or straight possible?</li><li>Counterfeited hands</li></ol></details></div>
+    <div class="area"><div class="count">5</div><h3>Bet sizing</h3><p>Rule-based: raises, c-bets, value bets</p>
+      <details><summary>All 5</summary><ol>
+        <li>Pot fraction to chips</li><li>Preflop raise, with limpers</li><li>Re-raise size</li><li>C-bet size by board</li><li>Value bets vs callers</li></ol></details></div>
+  </div>
+  <div class="note">Skip what you know: a new skill opens with 2 questions. Get both right and it goes straight to reviews.</div>
+</section>
+
+<section id="storage">
+  <h2><span class="no">06</span> Where your progress lives</h2>
+  <div class="chain">
+    <div class="step"><span class="n">1</span><span>Open the link in Safari</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">2</span><span>Add it to the Home Screen before you start</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">3</span><span>Progress stays on the phone, works offline</span></div>
+    <div class="arrow">&darr;</div>
+    <div class="step"><span class="n">4</span><span>Export a backup file weekly (a banner reminds you)</span></div>
+  </div>
+  <details class="why"><summary>Why install first?</summary>
+    <p>Safari deletes a site's stored data after 7 days of Safari use without a visit. Home Screen web apps are exempt, and their data is kept separate from Safari, so progress made in a Safari tab would not carry over (<a href="https://webkit.org/tracking-prevention/">WebKit</a>).</p>
+  </details>
+</section>
+
+<section id="success">
+  <h2><span class="no">07</span> After 4 weeks</h2>
+  <div class="stats">
+    <div class="stat"><div class="v">5 of 7</div><p>days with a finished session</p></div>
+    <div class="stat"><div class="v">~90%</div><p>reviews right, the scheduler's target</p></div>
+    <div class="stat"><div class="v">Faster</div><p>answers on outs and pot odds</p></div>
+    <div class="stat"><div class="v">In your head</div><p>pricing a typical call at the table</p></div>
+  </div>
+</section>
+
+<section id="later">
+  <h2><span class="no">08</span> Later, and not doing</h2>
+  <div class="two">
+    <div class="list"><h3>Later</h3><ul>
+      <li>Rebuild a range on a 13x13 grid</li>
+      <li>Play a full hand, street by street</li>
+      <li>Player types, side pots, bluff sizing</li>
+      <li>Equity drills against hands and ranges</li>
+      <li>Your own real-game spots as reviews</li>
+      <li>Daily reminder on Telegram</li>
+      <li>Scheduler tuned to your history</li>
+      <li>Sync across devices</li></ul></div>
+    <div class="list"><h3>Not doing</h3><ul>
+      <li>Real money or gambling links</li>
+      <li>Bots to play against</li>
+      <li>Accounts, multiplayer, leaderboards</li>
+      <li>Solver-accurate answers</li>
+      <li>Tournament play</li>
+      <li>Push notifications in v1</li></ul></div>
+  </div>
+</section>
+
+<section id="decisions">
+  <h2><span class="no">09</span> 3 decisions for you</h2>
+  <div class="decision"><h3><span class="num">1</span>Sign off the scope</h3>
+    <span class="opt"><b>a</b> Approve PRD v0.1 as the v1 scope</span>
+    <span class="opt"><b>b</b> Change something first</span></div>
+  <div class="decision"><h3><span class="num">2</span>Who checks the poker advice?</h3>
+    <span class="opt"><b>a</b> Chart and sizing rules drafted from cited sources, you skim them before they ship</span>
+    <span class="opt"><b>b</b> Drafted from cited sources, no review needed</span></div>
+  <div class="decision"><h3><span class="num">3</span>Look and feel</h3>
+    <span class="opt"><b>a</b> Compare 2 or 3 quick mockups before the build</span>
+    <span class="opt"><b>b</b> The builder picks</span></div>
+</section>
+
+<section id="next">
+  <h2><span class="no">10</span> After sign-off</h2>
+  <ol class="next">
+    <li>Implementation plan in milestones: outs and pot odds first, then the board, hands by seat, bet sizing, then install and backup</li>
+    <li>Draft the house chart and sizing rules, with sources</li>
+    <li>Build, test on your phone, publish at whhoaf.github.io/pokerlingo</li>
+  </ol>
+</section>
+
+<footer>
+  <p>pokerlingo PRD v0.1 summary. The full text spec is the source of truth: <a href="https://github.com/whhoaf/pokerlingo/blob/main/PRD.md">PRD.md on GitHub</a>.</p>
+  <details><summary>Sources</summary><ul>
+    <li><a href="https://pokercoach.app/">Poker Coach</a></li>
+    <li><a href="https://www.pokerskill.com/blog/poker-trainer-app-that-isnt-expensive/">Poker Skill comparison post</a> (by Poker Skill's makers)</li>
+    <li><a href="https://forge.poker/en/blog/anki-flashcards-poker-ranges">Forge.poker on Anki for ranges</a> (by a rival trainer)</li>
+    <li><a href="https://poker-toolkit.com/en/spaced-repetition-poker">Poker Toolkit on spaced repetition</a></li>
+    <li><a href="https://github.com/open-spaced-repetition/ts-fsrs">ts-fsrs</a></li>
+    <li><a href="https://github.com/open-spaced-repetition/fsrs4anki/blob/main/docs/tutorial.md">FSRS tutorial</a></li>
+    <li><a href="https://github.com/goldfire/pokersolver">pokersolver</a></li>
+    <li><a href="https://webkit.org/tracking-prevention/">WebKit tracking prevention</a></li>
+  </ul></details>
+</footer>
+
+</main>
+</body>
+</html>
