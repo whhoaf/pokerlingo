@@ -54,6 +54,30 @@ export function formatCard(card: Card): { rank: string; symbol: string; red: boo
   return { rank: rank === 'T' ? '10' : rank, symbol: suitSymbol(suit), red: isRed(suit) };
 }
 
+const RANK_WORDS: Record<string, string> = {
+  A: 'ace',
+  K: 'king',
+  Q: 'queen',
+  J: 'jack',
+  T: 'ten',
+  '9': 'nine',
+  '8': 'eight',
+  '7': 'seven',
+  '6': 'six',
+  '5': 'five',
+  '4': 'four',
+  '3': 'three',
+  '2': 'two',
+};
+
+const SUIT_WORDS: Record<string, string> = { s: 'spades', h: 'hearts', d: 'diamonds', c: 'clubs' };
+
+/** Spoken form, for screen readers: 'ace of spades'. */
+export function cardLabel(card: Card): string {
+  const { rank, suit } = parseCard(card);
+  return `${RANK_WORDS[rank]} of ${SUIT_WORDS[suit]}`;
+}
+
 /** Text form for prompts and feedback, for example 'A♠'. */
 export function cardText(card: Card): string {
   const f = formatCard(card);
