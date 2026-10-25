@@ -10,6 +10,12 @@ export function dayKey(now: Date): string {
   return `${shifted.getFullYear()}-${pad(shifted.getMonth() + 1)}-${pad(shifted.getDate())}`;
 }
 
+/** The moment a day key begins: 4am local time on that date. */
+export function dayStart(key: string): Date {
+  const [y, m, d] = key.split('-').map(Number) as [number, number, number];
+  return new Date(y, m - 1, d, ROLLOVER_HOURS, 0, 0, 0);
+}
+
 /** Move a day key by whole days. Pure calendar arithmetic, no time zone involved. */
 export function addDays(key: string, days: number): string {
   const [y, m, d] = key.split('-').map(Number) as [number, number, number];

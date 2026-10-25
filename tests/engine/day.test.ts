@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, currentStreak, dayKey } from '../../src/engine/day';
+import { addDays, currentStreak, dayKey, dayStart } from '../../src/engine/day';
 
 // Dates are built in local time, so these tests pass in any time zone.
 const at = (y: number, m: number, d: number, h = 0, min = 0) => new Date(y, m - 1, d, h, min);
@@ -29,6 +29,17 @@ describe('dayKey', () => {
 
   it('pads single digits', () => {
     expect(dayKey(at(2026, 3, 5, 12, 0))).toBe('2026-03-05');
+  });
+});
+
+describe('dayStart', () => {
+  it('is 4am local time on the date', () => {
+    expect(dayStart('2026-10-25').getTime()).toBe(at(2026, 10, 25, 4, 0).getTime());
+  });
+
+  it('agrees with dayKey', () => {
+    expect(dayKey(dayStart('2026-10-25'))).toBe('2026-10-25');
+    expect(dayKey(new Date(dayStart('2026-10-25').getTime() - 1))).toBe('2026-10-24');
   });
 });
 
