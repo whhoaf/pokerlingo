@@ -1,6 +1,6 @@
 # pokerlingo: product requirements
 
-**Version 0.1, draft for sign-off.** 25 October 2026 (HKT).
+**Version 0.2, signed off.** 25 October 2026 (HKT). Build plan: [`docs/PLAN.md`](docs/PLAN.md).
 Visual summary of this document: [`docs/prd-summary.html`](docs/prd-summary.html). This file is the source of truth; the summary is rebuilt whenever it changes.
 
 ## Summary
@@ -54,6 +54,9 @@ All dates HKT.
 | D8 | 2026-10-25 | The v1 and Later split in section 11 accepted as proposed. |
 | D9 | 2026-10-25 | Name: pokerlingo, served at whhoaf.github.io/pokerlingo. |
 | D10 | 2026-10-25 | This PRD lives in the GitHub repo, next to the code. |
+| D11 | 2026-10-25 | PRD v0.1 signed off; build started. |
+| D12 | 2026-10-25 | Look and feel: the builder picks (no mockup round). |
+| D13 | 2026-10-25 | Poker advice: the chart and sizing rules are drafted from cited sources and shown to the owner when ready; review optional. Builder default, owner can change it. |
 
 ## 4. Learning model
 
@@ -225,7 +228,7 @@ From the original resource list. Links open in a new tab. Embedding is not possi
 - Seeded random generation, so any question can be rebuilt from its seed for testing.
 - Tests: every generator and grader has unit tests, outs counts are checked by brute force against pokersolver, and a content check fails the build if a chart entry or rule has no source.
 - Phone portrait first: one-handed use, large tap targets, suits shown by colour and symbol.
-- Build tooling (plain modules or a bundler) is decided in the implementation plan.
+- Build tooling: Vite, TypeScript and Preact, deployed from a local build to a `gh-pages` branch. Details in `docs/PLAN.md`.
 
 ## 9. Success measures
 
@@ -273,9 +276,7 @@ After 4 weeks of use:
 
 ## 12. Open questions
 
-1. **Sign-off.** Approve this PRD as the v1 scope.
-2. **Poker advice review.** (a) The chart and sizing rules are drafted from cited sources and you skim them before they ship. (b) Drafted from cited sources, no review.
-3. **Look and feel.** (a) Compare 2 or 3 quick mockups before the build. (b) The builder picks.
+None blocking. Sign-off, look and feel, and advice review are settled as D11 to D13.
 
 ## 13. Next steps after sign-off
 
