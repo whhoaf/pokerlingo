@@ -4,6 +4,7 @@ dev-dist/
 coverage/
 screenshots/
 scratch/
+__pycache__/
 .vitest/
 *.log
 .DS_Store
