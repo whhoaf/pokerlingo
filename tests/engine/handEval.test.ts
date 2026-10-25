@@ -19,6 +19,12 @@ describe('evaluate', () => {
     expect(h.name).toBe('Straight');
   });
 
+  it('writes the ace of a wheel as A, not 1', () => {
+    const h = evaluate(['As', '2h', '3d', '4c', '5s', 'Kd', '9c']);
+    expect(h.cards).toContain('As');
+    expect(h.cards.join(' ')).not.toMatch(/1/);
+  });
+
   it('returns the five best cards in the engine notation', () => {
     const h = evaluate(['As', 'Ks', 'Qs', 'Js', 'Ts', '2d', '3c']);
     expect([...h.cards].sort()).toEqual(['As', 'Js', 'Ks', 'Qs', 'Ts']);

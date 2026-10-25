@@ -1,4 +1,4 @@
-import pokersolver from 'pokersolver';
+import pokersolver, { type Hand as SolvedHand } from 'pokersolver';
 import type { Card } from './types';
 
 const { Hand } = pokersolver;
@@ -28,14 +28,28 @@ export function categoryName(category: number): string {
   return CATEGORY_NAMES[category - 1] ?? 'Unknown';
 }
 
-/** pokersolver prints ten as '10'. The engine always writes 'T'. */
+/** pokersolver prints ten as '10' and the ace of a low straight as '1'. The engine writes 'T' and 'A'. */
 function toEngineCard(text: string): Card {
-  return text.startsWith('10') ? 'T' + text.slice(2) : text;
+  if (text.startsWith('10')) return 'T' + text.slice(2);
+  if (text.startsWith('1')) return 'A' + text.slice(1);
+  return text;
 }
 
-/** Best five-card hand from 5 to 7 cards. */
-export function evaluate(cards: readonly Card[]): Evaluated {
-  const hand = Hand.solve([...cards]);
+export type { SolvedHand };
+
+/** A solved hand that can be compared quickly. Keep it when one hand is compared many times. */
+export function solve(cards: readonly Card[]): SolvedHand {
+  return Hand.solve([...cards]);
+}
+
+/** 1 if a beats b, -1 if b beats a, 0 for a tie. */
+export function compareSolved(a: SolvedHand, b: SolvedHand): -1 | 0 | 1 {
+  // pokersolver's compare() is a sort order: negative means the first hand wins.
+  const diff = a.compare(b);
+  return diff < 0 ? 1 : diff > 0 ? -1 : 0;
+}
+
+export function describeSolved(hand: SolvedHand): Evaluated {
   return {
     category: hand.rank,
     name: hand.name,
@@ -44,11 +58,14 @@ export function evaluate(cards: readonly Card[]): Evaluated {
   };
 }
 
+/** Best five-card hand from 5 to 7 cards. */
+export function evaluate(cards: readonly Card[]): Evaluated {
+  return describeSolved(solve(cards));
+}
+
 /** 1 if a beats b, -1 if b beats a, 0 for a tie. */
 export function compareHands(a: readonly Card[], b: readonly Card[]): -1 | 0 | 1 {
-  // pokersolver's compare() is a sort order: negative means the first hand wins.
-  const diff = Hand.solve([...a]).compare(Hand.solve([...b]));
-  return diff < 0 ? 1 : diff > 0 ? -1 : 0;
+  return compareSolved(solve(a), solve(b));
 }
 
 /** Indexes of the winning hands. More than one means a split pot. */
