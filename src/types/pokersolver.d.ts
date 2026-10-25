@@ -20,7 +20,7 @@ declare module 'pokersolver' {
     cardPool: SolverCard[];
     static solve(cards: string[], game?: unknown, canDisqualify?: boolean): Hand;
     static winners(hands: Hand[]): Hand[];
-    /** Negative if this hand loses, 0 on a tie, positive if it wins. */
+    /** Sort order: negative if this hand wins, 0 on a tie, positive if it loses. */
     compare(other: Hand): number;
     beats(other: Hand): boolean;
     loses(other: Hand): boolean;
