@@ -71,7 +71,7 @@ describe('D1 turn a pot fraction into chips', () => {
     expect((150 * 2) / 3).toBe(100);
     expect(ex.answer).toBe('100 chips');
     expect(d1Tolerance(100)).toBe(5);
-    expect(ex.working).toEqual(['150 / 3 = 50', '50 x 2 = 100', 'Within 5 chips counts as right']);
+    expect(ex.working).toEqual(['150 / 3 = 50', '50 x 2 = 100', 'Within 5 chips or 5%, whichever is larger, counts as right']);
     // The explainer's pot of 120 sums.
     const body = D1.explainer.body.join(' ');
     expect(body).toContain('a third is 40, half is 60, two thirds is 80 and three quarters is 90');

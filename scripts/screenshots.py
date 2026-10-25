@@ -118,6 +118,27 @@ def dump_db(page: Page) -> dict:
     )
 
 
+SKILL_IDS = ["B1", "C1", "B2", "C2", "B3", "C3", "B4", "C4", "B5", "C5", "B6", "C6", "B7", "D1", "B8", "B9"]
+
+# Makes every random seed in the app repeatable, so a run gives the same screenshots.
+FIXED_SEEDS_JS = """
+(() => {
+  let s = 20261025;
+  const next = () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return (t ^ (t >>> 14)) >>> 0;
+  };
+  const orig = crypto.getRandomValues.bind(crypto);
+  crypto.getRandomValues = (arr) => {
+    if (arr instanceof Uint32Array && arr.length === 1) { arr[0] = next(); return arr; }
+    return orig(arr);
+  };
+})();
+"""
+
 SEED_DUE_JS = """
 async () => {
   const db = await new Promise((res, rej) => {
@@ -128,7 +149,7 @@ async () => {
   const store = (mode) => db.transaction('skillStates', mode).objectStore('skillStates');
   const base = await new Promise((res) => { const r = store('readonly').get('B1'); r.onsuccess = () => res(r.result); });
   const past = new Date(Date.now() - 3 * 86400000).toISOString();
-  const ids = ['B1','B2','B3','B4','B5','B6','B7','B8','B9'];
+  const ids = %s;
   const tx = db.transaction('skillStates', 'readwrite');
   ids.forEach((id, i) => {
     const days = 5 + i * 2;
@@ -141,7 +162,86 @@ async () => {
   await new Promise((res) => { tx.oncomplete = res; });
   db.close();
 }
-"""
+""" % json.dumps(SKILL_IDS)
+
+
+def answer_any(page: Page, index: int = 0) -> None:
+    """Answer the question on screen: choice number `index` (wrapping), or 1 for a number question."""
+    choices = page.locator(".choice")
+    if choices.count() > 0:
+        choices.nth(index % choices.count()).click()
+    else:
+        number_answer(page, "1")
+
+
+def wait_for_feedback(page: Page) -> str:
+    """Wait for the feedback panel and say whether it was right."""
+    page.locator(".feedback-title").wait_for()
+    return "correct" if page.locator(".feedback-title").inner_text().strip() == "Correct" else "wrong"
+
+
+def skill_row(page: Page, skill_id: str):
+    return page.locator(".skill-row").filter(has=page.locator(".skill-id", has_text=re.compile(f"^{skill_id}$")))
+
+
+def d1_answer(prompt: str) -> str:
+    """The right chips for a D1 prompt, worked out here from the text on screen."""
+    pot = int(re.search(r"The pot is (\d+)\.", prompt).group(1))
+    fractions = {
+        "a third of the pot": 1 / 3,
+        "half the pot": 1 / 2,
+        "two thirds of the pot": 2 / 3,
+        "three quarters of the pot": 3 / 4,
+        "the whole pot": 1,
+    }
+    for words, f in fractions.items():
+        if f"bet of {words}" in prompt:
+            return str(round(pot * f))
+    raise ValueError("unknown D1 prompt: " + prompt)
+
+
+def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
+    """Open a skill, screenshot its explainer, then practise until one right and one wrong answer are saved."""
+    page.locator(".tab", has_text="Skills").click()
+    page.get_by_text("Reading the board").wait_for()
+    skill_row(page, skill_id).click()
+    page.get_by_text("Worked example").wait_for()
+    shot(page, f"{prefix}-{skill_id}-skill-detail")
+    click(page, "Practise")
+    page.get_by_text(f"Practice, {skill_id}").wait_for()
+    got: set[str] = set()
+    for attempt in range(18):
+        page.locator(".prompt").wait_for()
+        prompt = page.locator(".prompt").inner_text()
+        if attempt == 0:
+            shot(page, f"{prefix}-{skill_id}-question")
+            if skill_id == "C4":
+                cards = page.locator(".choice .pcard").count()
+                if cards != 8:
+                    problem(f"C4 should show 8 mini cards in its choices, found {cards}")
+        if skill_id == "D1":
+            # Wrong on odd attempts: one chip is never inside the tolerance.
+            if attempt % 2 == 0:
+                number_answer(page, d1_answer(prompt))
+            else:
+                number_answer(page, "1")
+        else:
+            answer_any(page, attempt)
+        outcome = wait_for_feedback(page)
+        label = page.locator(".outs-label")
+        if skill_id == "C4" and outcome == "correct" and (label.count() == 0 or "nuts" not in label.inner_text().lower()):
+            problem("C4 feedback does not label the nuts")
+        if outcome not in got:
+            got.add(outcome)
+            shot(page, f"{prefix}-{skill_id}-feedback-{outcome}")
+        if len(got) == 2:
+            break
+        click(page, "Next question")
+    if len(got) < 2:
+        print(f"note: {skill_id} only showed {sorted(got)} feedback in 18 tries")
+    click(page, "Done", exact=True)
+    page.get_by_text("Next review").wait_for()
+    click(page, "Back")
 
 
 def main() -> None:
@@ -163,6 +263,7 @@ def main() -> None:
             if user_agent:
                 kwargs["user_agent"] = user_agent
             ctx = browser.new_context(**kwargs)
+            ctx.add_init_script(FIXED_SEEDS_JS)
             return ctx
 
         def watch(page: Page) -> None:
@@ -178,9 +279,11 @@ def main() -> None:
         shot(page, "01-install")
         page.get_by_role("button", name="Continue in the browser").click()
         page.get_by_text("Welcome").wait_for()
+        if "read the board" not in page.locator(".panel--accent").first.inner_text():
+            problem("the welcome text does not mention reading the board")
         shot(page, "02-home-first-run")
 
-        # ---- B. First session: placement, then a skill that needs teaching ----
+        # ---- B. First session: B1 is placed, then C1 (reading the board) is met ----
         click(page, "Start a 10-minute session")
         page.get_by_text("New skill, question 1 of 2").wait_for()
         shot(page, "03-probe-question")
@@ -194,46 +297,80 @@ def main() -> None:
         page.get_by_text("You already know this one").wait_for()
         shot(page, "06-probe-placed")
         click(page, "Next")
+
+        # The second new skill is C1, so a new player meets both areas in the first session.
         page.get_by_text("New skill, question 1 of 2").wait_for()
-        number_answer(page, "1")
-        page.get_by_text("Not quite").wait_for()
-        shot(page, "07-probe-feedback-wrong")
+        if page.locator(".choice").count() != 4:
+            problem("the second new skill should be C1 with four hand-name choices")
+        shot(page, "07-probe-choice-question")
+        page.locator(".choice").nth(0).click()
+        first = wait_for_feedback(page)
+        label = page.locator(".outs-label")
+        if label.count() == 0 or "best five" not in label.inner_text().lower():
+            problem("C1 feedback does not show the best five cards")
+        shot(page, f"08-probe-choice-feedback-{first}")
         click(page, "Next")
-        number_answer(page, "1")
-        click(page, "Next")
-        page.get_by_text("Take a minute with this one").wait_for()
-        shot(page, "08-explainer")
-        click(page, "Start practice")
-        page.get_by_text("New skill, practice").wait_for()
-        shot(page, "09-practice-question")
-        number_answer(page, "8")
-        page.get_by_text("Correct").first.wait_for()
-        shot(page, "10-practice-feedback")
-        click(page, "Next")
+        page.get_by_text("New skill, question 2 of 2").wait_for()
+        page.locator(".choice").nth(1).click()
+        second = wait_for_feedback(page)
+        if first == "correct" and second == "correct":
+            page.get_by_text("You already know this one").wait_for()
+            shot(page, "09-probe-placed-C1")
+            click(page, "Next")
+        else:
+            shot(page, f"09-probe-choice-feedback-{second}")
+            click(page, "Next")
+            page.get_by_text("Take a minute with this one").wait_for()
+            shot(page, "10-explainer")
+            click(page, "Start practice")
+            for n in range(3):
+                page.get_by_text("New skill, practice").wait_for()
+                if n == 0:
+                    shot(page, "11-practice-question")
+                page.locator(".choice").nth(n % 4).click()
+                outcome = wait_for_feedback(page)
+                if n == 0:
+                    shot(page, f"12-practice-feedback-{outcome}")
+                click(page, "Next")
+                if page.get_by_text("Session complete").count() > 0 or outcome == "correct":
+                    break
         page.get_by_text("Session complete").wait_for()
-        shot(page, "11-summary")
+        shot(page, "13-summary")
         click(page, "Done")
         page.get_by_text("Done for today").wait_for()
         page.get_by_text("Back up your progress").wait_for()
-        shot(page, "12-home-done-export-banner")
+        shot(page, "14-home-done-export-banner")
 
         # ---- C. Skill map, detail, locked skill, extra practice ----
         page.locator(".tab", has_text="Skills").click()
         page.get_by_text("Outs and pot odds").wait_for()
-        shot(page, "13-skill-map")
+        for text in ["Reading the board", "Bet sizing", "Hands by seat"]:
+            if page.get_by_text(text).count() == 0:
+                problem(f"skill map is missing the area {text}")
+        if page.get_by_text("Coming in a later update.", exact=True).count() != 1:
+            problem("area A should show 'Coming in a later update.' once")
+        if page.get_by_text("Coming in a later update: D2 to D5.", exact=True).count() != 1:
+            problem("area D should show D1 and then 'Coming in a later update: D2 to D5.'")
+        for sid in ["C1", "C2", "C3", "C4", "C5", "C6", "D1"]:
+            if skill_row(page, sid).count() != 1:
+                problem(f"skill map has no row for {sid}")
+        shot(page, "15-skill-map")
         page.locator(".skill-row", has_text="Count outs: flush draw").click()
-        shot(page, "14-skill-detail")
+        shot(page, "16-skill-detail")
         click(page, "Back")
         page.locator(".skill-row", has_text="combination draws").click()
-        shot(page, "15-skill-detail-locked")
+        shot(page, "17-skill-detail-locked")
+        click(page, "Back")
+        skill_row(page, "C4").click()
+        shot(page, "18-skill-detail-C4-unlocked-by-C1")
         click(page, "Back")
         page.locator(".skill-row", has_text="Count outs: flush draw").click()
         click(page, "Practise")
         page.get_by_text("Practice, B1").wait_for()
-        shot(page, "16-practice-question")
+        shot(page, "19-practice-question")
         number_answer(page, "9")
         page.get_by_text("Correct").first.wait_for()
-        shot(page, "17-practice-feedback")
+        shot(page, "20-practice-feedback")
         click(page, "Done", exact=True)
         page.get_by_text("Next review").wait_for()
 
@@ -298,14 +435,21 @@ def main() -> None:
             problem("data changed across a reload")
         print("progress survives a reload")
 
-        # ---- F. Reviews for all nine skills ----
+        # ---- F. Every new skill: explainer, question, right and wrong feedback ----
+        # Seeding all 16 skills as introduced unlocks the lot, so each can be practised.
         page.evaluate(SEED_DUE_JS)
         page.reload()
         page.get_by_text("still due will roll over").wait_for()
         shot(page, "25-home-reviews-due")
+        for sid in ["C1", "C2", "C3", "C4", "C5", "C6", "D1"]:
+            practise_skill(page, sid, "26")
+        page.locator(".tab", has_text="Today").click()
+        page.get_by_text("still due will roll over").wait_for()
+
+        # ---- F2. A review session over all 16 skills ----
         click(page, "Start another session")
         seen: dict[str, int] = {}
-        for i in range(1, 46):
+        for i in range(1, 121):
             page.locator(".prompt").wait_for()
             tmp = OUT / f"_q{i}.png"
             page.wait_for_timeout(100)
@@ -321,10 +465,11 @@ def main() -> None:
                 number_answer(page, "1")
             page.get_by_text("Skill: ").wait_for()
             page.wait_for_timeout(100)
+            skill = re.search(r"Skill: ([A-D]\d)", page.get_by_text("Skill: ").inner_text()).group(1)
             box = page.get_by_role("button", name=re.compile("^(Next|Finish session)$")).bounding_box()
             if box is None or box["y"] + box["height"] > VIEWPORT["height"] + 1:
-                problem(f"review {i}: the Next button is below the fold: {box}")
-            skill =re.search(r"Skill: (B\d)", page.get_by_text("Skill: ").inner_text()).group(1)
+                problem(f"review {i} ({skill}): the Next button is below the fold: {box}")
+                page.screenshot(path=str(OUT / f"_fold-{i}-{skill}.png"))  # what the phone shows, not the full page
             seen[skill] = seen.get(skill, 0) + 1
             label = f"{seen[skill]}"
             if seen[skill] <= 2:  # keep the first question and its retry for each skill
@@ -337,10 +482,10 @@ def main() -> None:
                 page.get_by_text("End this session?").wait_for()
                 shot(page, "31-end-dialog")
                 click(page, "Keep going")
-            if len(seen) == 9 and all(n >= 1 for n in seen.values()):
+            if len(seen) == len(SKILL_IDS):
                 break
             click(page, "Next")
-        if len(seen) < 9:
+        if len(seen) < len(SKILL_IDS):
             problem(f"only saw skills {sorted(seen)} in the review run after {i} questions")
         page.locator(".session-top").get_by_role("button", name="End").click()
         page.get_by_text("End this session?").wait_for()

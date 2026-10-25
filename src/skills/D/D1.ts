@@ -41,7 +41,7 @@ export const D1: SkillDef = {
       working.push(`${pot} / ${size.den} = ${chips(pot / size.den)}`);
       if (size.num > 1) working.push(`${chips(pot / size.den)} x ${size.num} = ${chips(exact)}`);
     }
-    working.push(`Within ${chips(tolerance)} chips counts as right`);
+    working.push('Within 5 chips or 5%, whichever is larger, counts as right');
 
     return {
       skillId: 'D1',
@@ -71,7 +71,7 @@ export const D1: SkillDef = {
       prompt: 'The pot is 150. How many chips is a bet of two thirds of the pot?',
       table: { pot: 150, note: 'Size the bet as a fraction of the pot' },
       answer: '100 chips',
-      working: ['150 / 3 = 50', '50 x 2 = 100', 'Within 5 chips counts as right'],
+      working: ['150 / 3 = 50', '50 x 2 = 100', 'Within 5 chips or 5%, whichever is larger, counts as right'],
     },
   },
 };
