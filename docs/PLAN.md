@@ -5,7 +5,7 @@ Scope comes from [`PRD.md`](../PRD.md). This file says how to build it. If the t
 ## Rules for coding agents
 
 - Read `PRD.md` and this file before starting. Write one progress report per milestone in `docs/progress/`.
-- Do not edit `PRD.md` or `docs/prd-summary.html`. Do not create `CLAUDE.md` or `AGENTS.md`. If the PRD and this plan conflict, follow the PRD and note the conflict in the progress report.
+- Do not edit `PRD.md`, `docs/prd-summary.html` or `CLAUDE.md`. If the PRD and this plan conflict, follow the PRD and note the conflict in the progress report.
 - Commands: `npm run dev`, `npm test`, `npm run typecheck`, `npm run build`, `npm run preview`.
 - Never run `npm run deploy` or `git push`; the owner deploys. Commit after each task with a clear message. Never force-push or rewrite history.
 - Engine code (`src/engine`, `src/skills`, `src/storage`) is pure TypeScript with no DOM access, and every module has tests. A question must be fully determined by its skill ID and seed.
@@ -122,8 +122,8 @@ These make PRD section 4 exact.
 - **Due:** `card.due <= now`. Due reviews are served lowest retrievability first.
 - **Session** (length default 10 minutes; setting 5, 10, 15 or 20):
   1. Build the due list at session start.
-  2. Serve due skills one at a time. After a wrong answer, schedule an in-session retry 2 to 4 questions later (seeded random) with a fresh question seed, if time remains. Every answer, retries included, updates FSRS.
-  3. When no due or retry items remain, at least 2 minutes remain, and fewer than `newPerSession` skills (default 2, setting 1 to 3) were introduced today, introduce the next unlocked skill in intro order: 2 probe questions; both right means placement (Easy) and the skill is done for now; otherwise show the explainer, then practice questions until one is right or 3 have been asked, and the first FSRS rating comes from the last practice answer.
+  2. Serve due skills one at a time. After a wrong answer, schedule an in-session retry 2 to 4 questions later (seeded random) with a fresh question seed, if time remains. At most 3 retries per skill per session; after that the skill stays due for the next session. Every answer, retries included, updates FSRS.
+  3. When no due or retry items remain, at least 2 minutes remain, and fewer than `newPerSession` skills (default 2, setting 1 to 3) were introduced in this session (PRD F2), introduce the next unlocked skill in intro order: 2 probe questions; both right means placement (Easy) and the skill is done for now; otherwise show the explainer, then practice questions until one is right or 3 have been asked, and the first FSRS rating comes from the last practice answer.
   4. When the timer reaches zero, the current question finishes (feedback included), then the session ends. It ends early when nothing is left.
   5. Unanswered due items stay due. No new skill is introduced while any review is due, overdue ones from earlier days included.
 - **Day key:** the local date of `now - 4 hours`. **Streak:** consecutive day keys with a finished session. A finished session is one where the timer ran out or nothing was left.
