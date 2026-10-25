@@ -54,7 +54,8 @@ export function describeSolved(hand: SolvedHand): Evaluated {
     category: hand.rank,
     name: hand.name,
     description: hand.descr,
-    cards: hand.cards.map((c) => toEngineCard(c.toString())),
+    // pokersolver lists every suited card for a flush, so a 6 or 7 card flush has more than five. They come best first.
+    cards: hand.cards.slice(0, 5).map((c) => toEngineCard(c.toString())),
   };
 }
 

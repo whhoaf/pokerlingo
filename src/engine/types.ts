@@ -24,6 +24,7 @@ export interface GradeResult {
   reason: string; // one line
   working?: string[]; // short lines, e.g. ['You need 25%', 'You have about 18%']
   highlight?: Card[]; // cards to highlight in feedback
+  highlightLabel?: string; // what the highlighted cards are, e.g. 'The nuts'; default is 'Your outs'
 }
 
 export interface Question {

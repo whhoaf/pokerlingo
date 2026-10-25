@@ -19,6 +19,14 @@ describe('evaluate', () => {
     expect(h.name).toBe('Straight');
   });
 
+  it('returns exactly the best five cards of a flush with six or seven suited cards', () => {
+    const six = evaluate(['As', 'Ks', 'Js', 'Ts', '8s', '4s', '2d']);
+    expect(six.name).toBe('Flush');
+    expect(six.cards).toEqual(['As', 'Ks', 'Js', 'Ts', '8s']);
+    const seven = evaluate(['As', 'Ks', 'Js', 'Ts', '8s', '4s', '3s']);
+    expect(seven.cards).toEqual(['As', 'Ks', 'Js', 'Ts', '8s']);
+  });
+
   it('writes the ace of a wheel as A, not 1', () => {
     const h = evaluate(['As', '2h', '3d', '4c', '5s', 'Kd', '9c']);
     expect(h.cards).toContain('As');

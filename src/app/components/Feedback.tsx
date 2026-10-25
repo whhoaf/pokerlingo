@@ -13,7 +13,14 @@ interface Props {
 
 /** Right or wrong, the correct answer, one line of reasoning and the supporting picture. */
 export function Feedback({ result, skillTitle, note, nextLabel = 'Next', onNext }: Props) {
-  const outs = result.highlight && result.highlight.length > 0 ? sortByRank(result.highlight) : null;
+  // Outs are sorted high to low. Labelled cards keep the order the skill gave them.
+  const shown =
+    result.highlight && result.highlight.length > 0
+      ? result.highlightLabel
+        ? result.highlight
+        : sortByRank(result.highlight)
+      : null;
+  const shownLabel = result.highlightLabel ?? `Your outs (${shown?.length ?? 0})`;
   return (
     <div class="stack" aria-live="polite">
       <div class={result.correct ? 'panel panel--good' : 'panel panel--bad'}>
@@ -29,10 +36,10 @@ export function Feedback({ result, skillTitle, note, nextLabel = 'Next', onNext 
             ))}
           </ul>
         )}
-        {outs && (
+        {shown && (
           <>
-            <div class="outs-label">Your outs ({outs.length})</div>
-            <CardRow cards={outs} left />
+            <div class="outs-label">{shownLabel}</div>
+            <CardRow cards={shown} left />
           </>
         )}
       </div>
