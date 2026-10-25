@@ -3,5 +3,6 @@ dist/
 dev-dist/
 coverage/
 screenshots/
+scratch/
 *.log
 .DS_Store
