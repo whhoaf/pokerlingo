@@ -185,12 +185,21 @@ a {
   color: var(--felt);
 }
 
+/* The main button stays at the bottom of the screen, within thumb reach, even on long pages. */
 .actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
   margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-top: 8px;
+  padding: 16px 0 calc(8px + var(--safe-bottom));
+  background: linear-gradient(to top, var(--paper) 78%, rgba(245, 242, 234, 0));
+}
+.screen--tabs .actions {
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding-bottom: 8px;
 }
 
 /* ---- panels ---- */
@@ -446,6 +455,7 @@ a {
 }
 .number-field {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -460,6 +470,7 @@ a {
 }
 .number-field input {
   flex: 1;
+  width: 100%;
   min-width: 0;
   border: 0;
   outline: 0;

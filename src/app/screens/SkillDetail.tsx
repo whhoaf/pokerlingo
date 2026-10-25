@@ -49,14 +49,17 @@ export function SkillDetailScreen({ skillId, curriculum, records, logs, now, onB
 
       <Explainer skill={skill} />
 
+      <p class="muted small">
+        {state === 'locked'
+          ? `Unlocks once you have met ${missing.map((m) => curriculum.get(m).id).join(', ')}. `
+          : ''}
+        Extra practice never changes your review schedule.
+      </p>
+
       <div class="actions">
-        {state === 'locked' && (
-          <p class="muted small">Unlocks once you have met {missing.map((m) => curriculum.get(m).id).join(', ')}.</p>
-        )}
         <button type="button" class="btn btn--primary" disabled={state === 'locked'} onClick={onPractise}>
           Practise
         </button>
-        <p class="muted small">Extra practice never changes your review schedule.</p>
       </div>
     </div>
   );

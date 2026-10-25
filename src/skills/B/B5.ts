@@ -37,7 +37,7 @@ export const B5: SkillDef = {
       prompt: OUTS_PROMPT,
       table: { hole: draw.hole, board: draw.board, note: draw.street === 'flop' ? 'Flop' : 'Turn' },
       outs: draw.outs,
-      reason: `${draw.flushOuts.length} flush cards plus ${draw.straightOuts.length} straight cards, minus ${overlap} that are in both lists.`,
+      reason: `${draw.flushOuts.length} flush cards plus ${draw.straightOuts.length} straight cards, minus ${overlap} that ${overlap === 1 ? 'is' : 'are'} in both lists.`,
       working: [
         `Flush: ${draw.flushOuts.length} ${suit} left in the deck`,
         straightLine,

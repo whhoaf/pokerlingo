@@ -4,5 +4,6 @@ dev-dist/
 coverage/
 screenshots/
 scratch/
+.vitest/
 *.log
 .DS_Store

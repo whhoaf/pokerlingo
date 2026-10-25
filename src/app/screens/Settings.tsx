@@ -5,17 +5,31 @@ import { NEW_SKILL_CHOICES, SESSION_LENGTHS, type Settings } from '../../storage
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { formatShortDate } from '../format';
 
+function count(n: number, word: string): string {
+  return `${n} ${word}${n === 1 ? '' : 's'}`;
+}
+
 interface Props {
   settings: Settings;
   lastExportAt: string | null;
   exporting: boolean;
+  exportMessage: string | null;
   onChange(settings: Settings): void;
   onExport(): void;
   onImport(backup: BackupFile): Promise<void>;
   onReset(): Promise<void>;
 }
 
-export function SettingsScreen({ settings, lastExportAt, exporting, onChange, onExport, onImport, onReset }: Props) {
+export function SettingsScreen({
+  settings,
+  lastExportAt,
+  exporting,
+  exportMessage,
+  onChange,
+  onExport,
+  onImport,
+  onReset,
+}: Props) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<BackupFile | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -42,7 +56,7 @@ export function SettingsScreen({ settings, lastExportAt, exporting, onChange, on
     try {
       await onImport(backup);
       setMessage({
-        text: `Backup restored: ${backup.skillStates.length} skills and ${backup.sessions.length} sessions.`,
+        text: `Backup restored: ${count(backup.skillStates.length, 'skill')} and ${count(backup.sessions.length, 'session')}.`,
         error: false,
       });
     } catch {
@@ -120,6 +134,11 @@ export function SettingsScreen({ settings, lastExportAt, exporting, onChange, on
         />
       </div>
 
+      {exportMessage && !message && (
+        <div class="message" role="status">
+          {exportMessage}
+        </div>
+      )}
       {message && (
         <div class={message.error ? 'message message--error' : 'message'} role="status">
           {message.text}
@@ -146,8 +165,8 @@ export function SettingsScreen({ settings, lastExportAt, exporting, onChange, on
           onCancel={() => setPending(null)}
         >
           <p>
-            This backup has {pending.skillStates.length} skills and {pending.sessions.length} sessions, saved on{' '}
-            {formatShortDate(pending.exportedAt)}.
+            This backup has {count(pending.skillStates.length, 'skill')} and {count(pending.sessions.length, 'session')},
+            saved on {formatShortDate(pending.exportedAt)}.
           </p>
           <p>Importing replaces all progress on this device.</p>
         </ConfirmDialog>

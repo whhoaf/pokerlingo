@@ -38,9 +38,11 @@ export function Feedback({ result, skillTitle, note, nextLabel = 'Next', onNext 
       </div>
       {note && <div class="message">{note}</div>}
       <p class="muted small">Skill: {skillTitle}</p>
-      <button type="button" class="btn btn--primary" onClick={onNext}>
-        {nextLabel}
-      </button>
+      <div class="actions">
+        <button type="button" class="btn btn--primary" onClick={onNext}>
+          {nextLabel}
+        </button>
+      </div>
     </div>
   );
 }

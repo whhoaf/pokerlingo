@@ -160,14 +160,31 @@ describe('retries', () => {
     expect(step.purpose).toBe('retry');
   });
 
-  it('keeps retrying a skill that keeps being missed until the timer ends', () => {
-    const { session, clock } = setup({ records: [dueRecord('S1', 3)], newPerSession: 0 });
-    for (let i = 0; i < 5; i++) {
-      expect(current(session).skillId).toBe('S1');
+  it('retries a skill that keeps being missed 3 times, then leaves it for the next session', () => {
+    const { session, clock, ended } = setup({ records: [dueRecord('S1', 3)], newPerSession: 0 });
+    const purposes: string[] = [];
+    while (session.step.kind === 'question') {
+      purposes.push(current(session).purpose);
       clock.advance(MIN);
       answer(session, WRONG);
     }
-    expect(session.step.kind).toBe('question');
+    expect(purposes).toEqual(['review', 'retry', 'retry', 'retry']);
+    expect(ended[0]!.finished).toBe(true);
+    // Every attempt still counted for the schedule.
+    expect(session.currentRecords().get('S1')!.card.reps).toBe(dueRecord('S1', 3).card.reps + 4);
+  });
+
+  it('does not let one failing skill starve the rest of the queue', () => {
+    const ids = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'];
+    const { session } = setup({
+      skills: ids.map((id) => fakeSkill(id)),
+      records: ids.map((id, i) => dueRecord(id, 10 + i)),
+      newPerSession: 0,
+    });
+    const served = drain(session, WRONG);
+    for (const id of ids) expect(served).toContain(id);
+    // Each skill appears once plus at most 3 retries.
+    for (const id of ids) expect(served.filter((s) => s === id).length).toBeLessThanOrEqual(4);
   });
 
   it('updates the schedule on every answer, retries included', () => {

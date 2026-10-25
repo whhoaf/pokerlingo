@@ -236,6 +236,7 @@ export function App({ db }: { db: Db }) {
           settings={data.settings}
           lastExportAt={data.lastExportAt}
           exporting={exporting}
+          exportMessage={exportMessage}
           onChange={changeSettings}
           onExport={exportProgress}
           onImport={importProgress}

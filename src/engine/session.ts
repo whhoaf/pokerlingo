@@ -10,6 +10,11 @@ const NEW_SKILL_MIN_REMAINING_MS = 2 * MIN_MS;
 const PRACTICE_QUESTIONS_MAX = 3;
 const RETRY_MIN_GAP = 2;
 const RETRY_MAX_GAP = 4;
+/**
+ * A skill that keeps being missed gets this many retries in one session, then waits for
+ * the next one. Without a cap, retries of several missed skills would crowd out the rest.
+ */
+const MAX_RETRIES_PER_SKILL = 3;
 
 export interface SessionSettings {
   /** 5, 10, 15 or 20. */
@@ -108,6 +113,7 @@ export class Session {
   private readonly endAt: Date;
   private queue: string[];
   private retries: Retry[] = [];
+  private retryCounts = new Map<string, number>();
   private intro: Intro | null = null;
   private introduced: string[] = [];
   /** Questions served so far. The latest question has this index. */
@@ -171,9 +177,10 @@ export class Session {
 
     if (step.purpose === 'review' || step.purpose === 'retry') {
       this.applyRating(step.skillId, now, outcomeFor(result.correct), log);
-      if (!result.correct) {
+      if (!result.correct && (this.retryCounts.get(step.skillId) ?? 0) < MAX_RETRIES_PER_SKILL) {
         const gap = this.rng.int(RETRY_MIN_GAP, RETRY_MAX_GAP);
         this.retries.push({ skillId: step.skillId, atIndex: this.served + gap });
+        this.retryCounts.set(step.skillId, (this.retryCounts.get(step.skillId) ?? 0) + 1);
       }
       return result;
     }
