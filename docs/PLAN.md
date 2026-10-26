@@ -10,7 +10,7 @@ Scope comes from [`PRD.md`](../PRD.md). This file says how to build it. If the t
 - Never run `npm run deploy` or `git push`; the owner deploys. Commit after each task with a clear message. Never force-push or rewrite history.
 - Engine code (`src/engine`, `src/skills`, `src/storage`) is pure TypeScript with no DOM access, and every module has tests. A question must be fully determined by its skill ID and seed.
 - Writing rules for every user-facing string, code comment and doc: no em dashes or en dashes (use a comma, colon or full stop, or the word "to" for ranges). Short, plain sentences. British spelling (colour, practise as a verb).
-- No analytics, no third-party requests, no web fonts or CDNs. The app works offline after the first load.
+- No analytics, no third-party requests, no web fonts or CDNs. The app works offline after the first load. Exception, owner decision of 26 October 2026: the m6x11plus pixel font is bundled in `public/fonts/` and precached (see `docs/DESIGN.md`). Bundled files are not third-party requests.
 - Card notation inside the code: pokersolver strings such as `As`, `Td`, `9h`. On screen: rank plus suit symbol, with hearts and diamonds in red.
 
 ## Builder decisions
@@ -150,11 +150,7 @@ These make PRD section 4 exact.
 
 ## Look and feel
 
-- Palette from `docs/prd-summary.html`: paper `#f5f2ea`, ink `#1c1c1a`, felt `#1f6b4a`, red `#b3261e` for hearts and diamonds, ink for spades and clubs, gold `#9a6b00` for highlights.
-- System font stack. No web fonts, no CDNs, no third-party requests.
-- Playing cards: white rounded rectangles, rank above the suit symbol, about 56 by 78 px on a 390 px screen. The table is a felt-green rounded panel: board in the middle, your cards below, pot and bet as labelled chips.
-- Phone portrait first, 390 px wide. Tap targets at least 48 px tall. No horizontal scroll. Respect safe-area insets. Primary buttons sit low, within thumb reach.
-- Copy: short and plain, British spelling, no em dashes or en dashes anywhere.
+See [`docs/DESIGN.md`](DESIGN.md): the "Readable arcade" look chosen on 26 October 2026. It replaces the first look described here.
 
 ## Milestone 1: engine, app shell, Area B
 
