@@ -87,7 +87,9 @@ def shot(page: Page, name: str) -> None:
         problem(f"{name}: {item}")
     for item in page.evaluate(TAP_TARGETS_JS):
         problem(f"{name}: small tap target: {item}")
-    page.screenshot(path=str(OUT / f"{name}.png"), full_page=True)
+    # The feedback sheet is fixed to the bottom of the screen. A full-page picture would stretch it, so
+    # screens with a sheet are captured as the phone shows them.
+    page.screenshot(path=str(OUT / f"{name}.png"), full_page=page.locator(".sheet").count() == 0)
     print("saved", name)
 
 

@@ -8,3 +8,11 @@ A phone-first web app for learning casual Texas Hold'em in short daily sessions,
 - [`docs/prd-summary.html`](docs/prd-summary.html): visual summary of the PRD for sign-off. Rebuild it whenever `PRD.md` changes.
 
 When built, the app will be served at https://whhoaf.github.io/pokerlingo/.
+
+## Design
+
+The look is "Readable arcade", described in [`docs/DESIGN.md`](docs/DESIGN.md). It is inspired by Balatro and uses none of its assets. The pixel suit icons and the animated background are our own drawings and code.
+
+## Credits
+
+Pixel font: m6x11plus by Daniel Linssen (https://managore.itch.io/m6x11). It is free to use with attribution and is bundled in `public/fonts/`, so the app makes no request to another server for it.

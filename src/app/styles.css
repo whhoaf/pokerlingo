@@ -606,6 +606,7 @@ a {
   border-radius: var(--crad);
   box-shadow: 0 6px 0 rgba(0, 0, 0, 0.38);
   transform: rotate(var(--r, 0deg));
+  text-shadow: none;
   animation: deal 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
   animation-delay: var(--d, 0ms);
 }
@@ -1163,6 +1164,7 @@ a {
   max-width: 440px;
   max-height: 100%;
   overflow-y: auto;
+  background: var(--dark);
   padding: 16px;
   display: flex;
   flex-direction: column;
