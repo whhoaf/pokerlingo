@@ -26,13 +26,20 @@ interface TagContent {
   value: string;
 }
 
-/** The tag in the top bar: what kind of question this is. */
-function tagFor(step: QuestionStep): TagContent {
+/** Short area names for the top bar. */
+const AREA_TAG: Record<string, string> = { A: 'Seats', B: 'Outs, odds', C: 'Board', D: 'Sizing' };
+
+/**
+ * The tag in the top bar: what kind of question this is.
+ * Reviews show only the area. A skill ID or title would give the answer away (B1 is always a flush draw).
+ */
+function tagFor(step: QuestionStep, curriculum: Curriculum): TagContent {
+  const area = AREA_TAG[curriculum.get(step.skillId).area] ?? 'Review';
   switch (step.purpose) {
     case 'review':
-      return { kind: 'review', label: 'Review', value: step.skillId };
+      return { kind: 'review', label: 'Review', value: area };
     case 'retry':
-      return { kind: 'retry', label: 'Second try', value: step.skillId };
+      return { kind: 'retry', label: 'Second try', value: area };
     case 'probe':
       return { kind: 'new', label: 'New skill', value: `${step.probeNumber ?? 1} of 2` };
     case 'practice':
@@ -72,7 +79,7 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
   }
 
   const tag: TagContent =
-    step.kind === 'question' ? tagFor(step) : { kind: 'new', label: 'New skill', value: step.skill.id };
+    step.kind === 'question' ? tagFor(step, curriculum) : { kind: 'new', label: 'New skill', value: step.skill.id };
 
   const top = (
     <header class="hud">
