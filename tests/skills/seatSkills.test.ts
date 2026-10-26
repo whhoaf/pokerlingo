@@ -446,6 +446,7 @@ describe.each(ALL_CHARTS)('A9: same hand, different table size, with the %s', (_
         expect([...q.input.options.map((o) => o.id)].sort()).toEqual(['CO', 'HJ', 'LJ', 'UTG']);
         checkGrading(q, [pick('LJ')], ['HJ', 'UTG', 'CO'].map(pick));
         expect(q.grade(pick('LJ')).correctLabel).toBe('LJ');
+        expect(q.grade(pick('LJ')).draft).toBe(chart.draft);
         expect(q.prompt).toContain('6-player');
         expect(q.prompt).toContain('9-player');
       } else {

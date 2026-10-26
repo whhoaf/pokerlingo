@@ -6,10 +6,11 @@ interface Props {
   onPick(id: string): void;
   /** Once answered the buttons lock and show which was picked and which was right. */
   picked?: string;
-  correctId?: string;
+  /** Every choice that counts as right. More than one when the chart accepts two actions, or several sizes fit. */
+  correctIds?: string[];
 }
 
-export function ChoiceInput({ options, onPick, picked, correctId }: Props) {
+export function ChoiceInput({ options, onPick, picked, correctIds }: Props) {
   const locked = picked !== undefined;
   const withCards = options.some((o) => o.cards);
   return (
@@ -17,7 +18,7 @@ export function ChoiceInput({ options, onPick, picked, correctId }: Props) {
       {options.map((o) => {
         const classes = ['choice'];
         if (locked && o.id === picked) classes.push('choice--picked');
-        if (locked && correctId !== undefined && o.id === correctId) classes.push('choice--right');
+        if (locked && correctIds !== undefined && correctIds.includes(o.id)) classes.push('choice--right');
         else if (locked && o.id === picked) classes.push('choice--wrong');
         return (
           <button key={o.id} type="button" class={classes.join(' ')} disabled={locked} onClick={() => onPick(o.id)}>

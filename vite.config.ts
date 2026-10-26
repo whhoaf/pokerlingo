@@ -39,5 +39,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
+    // The 500-seed tests are CPU bound and run side by side, so a slow machine needs more than the default 5 seconds.
+    testTimeout: 60000,
   },
 });

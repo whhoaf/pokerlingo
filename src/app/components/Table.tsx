@@ -1,5 +1,6 @@
 import type { TableView } from '../../engine/types';
 import { PlayingCard } from './PlayingCard';
+import { SeatRingView } from './SeatRing';
 
 /** Cards are dealt one after another, this many milliseconds apart. */
 const DEAL_GAP = 120;
@@ -32,6 +33,7 @@ export function Table({ table }: { table: TableView }) {
           {table.bet !== undefined && <Chip label="Bet to call" value={table.bet} bet />}
         </div>
       )}
+      {table.ring && <SeatRingView ring={table.ring} />}
       {villain.length > 0 && (
         <div>
           <div class="lbl">Opponent</div>

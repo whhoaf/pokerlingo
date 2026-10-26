@@ -675,6 +675,237 @@ a {
   outline-offset: 1px;
 }
 
+/* ---- the table seen from above (Areas A and D) ---- */
+
+.ring {
+  position: relative;
+  width: 100%;
+  height: 236px;
+}
+.ring-table {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 14%;
+  bottom: 26%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+}
+.seat {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+.seat-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  height: 34px;
+  padding: 0 6px;
+  border-radius: 12px;
+  background: var(--dark);
+  border: 2px solid var(--dark-2);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+.seat-name,
+.seat-button {
+  font-family: var(--px);
+  font-size: 18px;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  text-rendering: optimizeSpeed;
+}
+.seat-name {
+  color: var(--text);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.seat-button {
+  position: absolute;
+  right: -12px;
+  top: -14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--suit-black);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+}
+.seat-tag {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  margin-top: 5px;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--text);
+}
+.seat--you .seat-pill {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.seat--you .seat-name {
+  color: var(--sheet);
+  text-shadow: none;
+}
+.seat--limp .seat-pill {
+  background: var(--blue);
+  border-color: var(--blue);
+  box-shadow: 0 4px 0 var(--blue-d);
+}
+.seat--raise .seat-pill {
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 4px 0 var(--red-d);
+}
+.seat--focus .seat-pill {
+  background: var(--purple);
+  border-color: var(--purple-l);
+}
+.seat--fold {
+  opacity: 0.45;
+}
+.seat--blank .seat-pill {
+  min-width: 36px;
+  width: 36px;
+}
+
+/* ---- the chart as a 13 by 13 grid ---- */
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rg {
+  display: grid;
+  grid-template-columns: 18px repeat(13, minmax(0, 1fr));
+  gap: 2px;
+}
+.rg-axis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 18px;
+  font-family: var(--px);
+  font-size: 18px;
+  font-weight: normal;
+  line-height: 1;
+  color: var(--light);
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  text-rendering: optimizeSpeed;
+}
+.rg-cell {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--dark-2);
+}
+.rg--raise {
+  background: var(--red);
+}
+.rg--reraise {
+  background: var(--purple);
+}
+.rg--call {
+  background: var(--blue);
+}
+.rg--check {
+  background: var(--green);
+}
+.rg--fold {
+  background: var(--dark-2);
+}
+.rg-cell--either::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+}
+.rg-cell--yours {
+  z-index: 1;
+  outline: 3px solid var(--text);
+  outline-offset: 1px;
+}
+.rg-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rg-key li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--text-soft);
+}
+.rg-swatch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+.rg-swatch--either {
+  background: var(--dark-2);
+}
+.rg-swatch--either::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+}
+.rg-swatch--yours {
+  background: var(--dark-2);
+  outline: 2px solid var(--text);
+  outline-offset: 0;
+}
+.draft-note {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--rad);
+  background: rgba(234, 192, 88, 0.16);
+  border: 2px solid var(--gold);
+}
+.draft-note .lbl {
+  color: var(--gold);
+}
+.draft-note p {
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
+.sources {
+  color: var(--light);
+}
+
 /* ---- the question ---- */
 
 .prompt {

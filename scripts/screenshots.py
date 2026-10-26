@@ -173,7 +173,25 @@ def dump_db(page: Page) -> dict:
     )
 
 
-SKILL_IDS = ["B1", "C1", "B2", "C2", "B3", "C3", "B4", "C4", "B5", "C5", "B6", "C6", "B7", "D1", "B8", "B9"]
+# Every skill, in the app's intro order.
+SKILL_IDS = [
+    "B1", "C1", "B2", "C2", "B3", "A1", "C3", "B4", "A2", "C4", "B5", "A3", "C5", "B6", "A4", "C6", "B7", "D1",
+    "A5", "B8", "A6", "B9", "A7", "D2", "A8", "A9", "D3", "D4", "D5",
+]
+# The sixteen skills a player had before Areas A and D were added.
+OLD_SKILL_IDS = ["B1", "C1", "B2", "C2", "B3", "C3", "B4", "C4", "B5", "C5", "B6", "C6", "B7", "D1", "B8", "B9"]
+
+REPO = Path(__file__).resolve().parent.parent
+CHART = json.loads((REPO / "content" / "house-chart.json").read_text())
+RULES = json.loads((REPO / "content" / "sizing-rules.json").read_text())
+# Skills that teach advice from a content file. They show the "Draft advice" note while the file is a draft.
+ADVICE_DRAFT = {
+    **{sid: CHART["draft"] for sid in ["A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9"]},
+    **{sid: RULES["draft"] for sid in ["D2", "D3", "D4", "D5"]},
+}
+# Skills with a seat picture, and those that show the chart grid after an answer.
+RING_SKILLS = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "D2", "D3"]
+GRID_SKILLS = ["A2", "A3", "A4", "A5", "A6", "A7", "A8"]
 
 # Makes every random seed in the app repeatable, so a run gives the same screenshots.
 FIXED_SEEDS_JS = """
@@ -219,6 +237,33 @@ async () => {
 }
 """ % json.dumps(SKILL_IDS)
 
+# The sixteen older skills are met and not due for ten days. Every Area A and D skill is removed, so the next
+# session introduces A1. Mimics a player who started before Areas A and D existed.
+INTRO_SEED_JS = """
+async () => {
+  const db = await new Promise((res, rej) => {
+    const r = indexedDB.open('pokerlingo');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const base = await new Promise((res) => { const r = db.transaction('skillStates', 'readonly').objectStore('skillStates').get('B1'); r.onsuccess = () => res(r.result); });
+  const future = new Date(Date.now() + 10 * 86400000).toISOString();
+  const last = new Date(Date.now() - 2 * 86400000).toISOString();
+  const keep = %s;
+  const all = %s;
+  const tx = db.transaction('skillStates', 'readwrite');
+  for (const id of all) {
+    if (keep.includes(id)) {
+      tx.objectStore('skillStates').put({ skillId: id, introducedAt: base.introducedAt, card: { ...base.card, due: future, last_review: last } });
+    } else {
+      tx.objectStore('skillStates').delete(id);
+    }
+  }
+  await new Promise((res) => { tx.oncomplete = res; });
+  db.close();
+}
+""" % (json.dumps(OLD_SKILL_IDS), json.dumps(SKILL_IDS))
+
 
 def answer_any(page: Page, index: int = 0) -> None:
     """Answer the question on screen: choice number `index` (wrapping), or 1 for a number question."""
@@ -255,12 +300,75 @@ def d1_answer(prompt: str) -> str:
     raise ValueError("unknown D1 prompt: " + prompt)
 
 
+def half_up(x: float) -> int:
+    """Round half up, like Math.round in the app."""
+    return int(x + 0.5 + 1e-9)
+
+
+def sizing_answer(page: Page, skill_id: str, prompt: str) -> str:
+    """The lowest right answer for D2, D3 or D5, worked out here from the rules file and the text on screen."""
+    if skill_id == "D2":
+        if "Everyone before you folds" in prompt:
+            limpers = 0
+        elif "1 player limps" in prompt:
+            limpers = 1
+        else:
+            limpers = int(re.search(r"(\d+) players limp", prompt).group(1))
+        rule = RULES["rules"]["D2"]
+        return str(half_up((rule["base"]["min"] + rule["perLimper"] * limpers) * 2))
+    if skill_id == "D3":
+        open_to = int(re.search(r"raises to (\d+) chips", prompt).group(1))
+        hero = page.locator(".seat--you .seat-name").inner_text().strip()
+        rule = RULES["rules"]["D3"]
+        span = rule["inPosition"] if hero == "BTN" else rule["outOfPosition"]
+        return str(half_up(span["min"] * open_to))
+    if skill_id == "D5":
+        pot = int(re.search(r"The pot is (\d+)\.", prompt).group(1))
+        return str(half_up(RULES["rules"]["D5"]["range"]["min"] * pot))
+    raise ValueError(skill_id)
+
+
+def check_ring(page: Page, skill_id: str, where: str) -> None:
+    """The seat picture: 6 to 9 seats, one button, your seat (or the highlighted seat in A1)."""
+    seats = page.locator(".ring .seat").count()
+    if not 6 <= seats <= 9:
+        problem(f"{where}: the table picture has {seats} seats")
+    if page.locator(".ring .seat-button").count() != 1:
+        problem(f"{where}: the table picture should have exactly one dealer button")
+    if skill_id == "A1":
+        if page.locator(".ring .seat--focus").count() != 1:
+            problem(f"{where}: A1 should highlight one seat")
+        names = [t.strip() for t in page.locator(".ring .seat-name").all_inner_texts()]
+        if any(n not in ("", "?") for n in names):
+            problem(f"{where}: A1 shows seat names {names}")
+    elif skill_id == "A9" and page.locator(".ring .seat--you").count() == 0:
+        if page.locator(".ring .seat--focus").count() != 1:
+            problem(f"{where}: A9 should highlight a seat")
+    elif page.locator(".ring .seat--you").count() != 1:
+        problem(f"{where}: the table picture should highlight your seat once")
+
+
+def check_draft_note(page: Page, skill_id: str, where: str) -> None:
+    """The Draft advice note shows on advice from a draft content file, and nowhere else."""
+    want = ADVICE_DRAFT.get(skill_id, False)
+    has = page.locator(".draft-note").count() > 0
+    if want and not has:
+        problem(f"{where}: {skill_id} is draft advice but shows no Draft advice note")
+    if has and not want:
+        problem(f"{where}: {skill_id} shows a Draft advice note it should not have")
+
+
 def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
     """Open a skill, screenshot its explainer, then practise until one right and one wrong answer are saved."""
     open_tab(page, "Skills")
     page.get_by_text("Reading the board").wait_for()
     skill_row(page, skill_id).click()
     page.get_by_text("Worked example").wait_for()
+    check_draft_note(page, skill_id, f"{skill_id} explainer")
+    if skill_id in RING_SKILLS and page.locator(".example .ring").count() != 1:
+        problem(f"{skill_id}: the worked example has no table picture")
+    if skill_id in GRID_SKILLS and page.locator(".explainer .rg-cell").count() != 169:
+        problem(f"{skill_id}: the worked example should show the 13 by 13 chart")
     shot(page, f"{prefix}-{skill_id}-skill-detail")
     click(page, "Practise")
     page.locator(".hud-info", has_text=skill_id).wait_for()
@@ -269,6 +377,8 @@ def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
         page.locator(".prompt").wait_for()
         prompt = page.locator(".prompt").inner_text()
         if attempt == 0:
+            if skill_id in RING_SKILLS:
+                check_ring(page, skill_id, f"{skill_id} question")
             shot(page, f"{prefix}-{skill_id}-question")
             if skill_id == "C4":
                 cards = page.locator(".choice .card").count()
@@ -280,12 +390,24 @@ def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
                 number_answer(page, d1_answer(prompt))
             else:
                 number_answer(page, "1")
+        elif skill_id in ("D2", "D3", "D5"):
+            number_answer(page, sizing_answer(page, skill_id, prompt) if attempt % 2 == 0 else "1")
         else:
             answer_any(page, attempt)
         outcome = wait_for_feedback(page)
         label = page.locator(".outs .lbl")
         if skill_id == "C4" and outcome == "correct" and (label.count() == 0 or "nuts" not in label.inner_text().lower()):
             problem("C4 feedback does not label the nuts")
+        if skill_id in ("D2", "D3", "D5") and outcome != ("correct" if attempt % 2 == 0 else "wrong"):
+            problem(f"{skill_id}: the answer worked out from the rules file was graded {outcome} on attempt {attempt}")
+        check_draft_note(page, skill_id, f"{skill_id} feedback")
+        if skill_id in GRID_SKILLS:
+            if page.locator(".sheet .rg-cell").count() != 169 or page.locator(".sheet .rg-cell--yours").count() != 1:
+                problem(f"{skill_id}: feedback should show the 13 by 13 chart with your hand outlined")
+            if page.locator(".sheet .sources").count() != 1:
+                problem(f"{skill_id}: feedback should name the source")
+        if skill_id in ("D2", "D3", "D4", "D5") and page.locator(".sheet .sources").count() != 1:
+            problem(f"{skill_id}: feedback should name the source")
         if outcome not in got:
             got.add(outcome)
             shot(page, f"{prefix}-{skill_id}-feedback-{outcome}")
@@ -409,13 +531,13 @@ def main() -> None:
         for text in ["Reading the board", "Bet sizing", "Hands by seat"]:
             if page.get_by_text(text).count() == 0:
                 problem(f"skill map is missing the area {text}")
-        if page.get_by_text("Coming in a later update.", exact=True).count() != 1:
-            problem("area A should show 'Coming in a later update.' once")
-        if page.get_by_text("Coming in a later update: D2 to D5.", exact=True).count() != 1:
-            problem("area D should show D1 and then 'Coming in a later update: D2 to D5.'")
-        for sid in ["C1", "C2", "C3", "C4", "C5", "C6", "D1"]:
+        if page.get_by_text("Coming in a later update").count() != 0:
+            problem("every area is live, but the skill map still says 'Coming in a later update'")
+        for sid in SKILL_IDS:
             if skill_row(page, sid).count() != 1:
                 problem(f"skill map has no row for {sid}")
+        if skill_row(page, "A2").locator(".state").inner_text().strip().lower() != "locked":
+            problem("A2 should be locked until A1 is met")
         shot(page, "15-skill-map")
         page.locator(".skill-row", has_text="Count outs: flush draw").click()
         shot(page, "16-skill-detail")
@@ -520,13 +642,16 @@ def main() -> None:
         page.get_by_text("Done for today").wait_for()
 
         # ---- F. Every new skill: explainer, question, right and wrong feedback ----
-        # Seeding all 16 skills as introduced unlocks the lot, so each can be practised.
+        # Seeding all 29 skills as introduced unlocks the lot, so each can be practised.
         page.evaluate(SEED_DUE_JS)
         page.reload()
         page.get_by_text("still due will roll over").wait_for()
         shot(page, "25-home-reviews-due")
         for sid in ["C1", "C2", "C3", "C4", "C5", "C6", "D1"]:
             practise_skill(page, sid, "26")
+        # Areas A and D: the explainer, a question, and right and wrong feedback for every skill.
+        for sid in ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "D2", "D3", "D4", "D5"]:
+            practise_skill(page, sid, "27")
         open_tab(page, "Today")
         page.get_by_text("still due will roll over").wait_for()
 
@@ -577,6 +702,40 @@ def main() -> None:
         page.get_by_text("Session ended early").wait_for()
         shot(page, "32-summary-ended-early")
         click(page, "Done")
+
+        # ---- F3. A player who had the first 16 skills meets Area A in a session ----
+        page.evaluate(INTRO_SEED_JS)
+        page.reload()
+        page.get_by_role("button", name=re.compile("^Start")).wait_for()
+        click(page, "Start")
+        explained = 0
+        for step in range(60):
+            page.locator(".prompt, :text('Take a minute with this one'), :text('Session complete')").first.wait_for()
+            if page.get_by_text("Session complete").count() > 0:
+                break
+            if page.get_by_text("Take a minute with this one").count() > 0:
+                title = page.locator("h1").first.inner_text()
+                explained += 1
+                check_draft_note(page, "A1" if title.startswith("Name the seats") else "A2", "in-session explainer")
+                shot(page, f"28-intro-explainer-{explained}")
+                click(page, "Start practice")
+                continue
+            if step < 3:
+                check_ring(page, "A1" if page.locator(".ring .seat--focus").count() == 1 else "A2", "intro question")
+                shot(page, f"28-intro-question-{step}")
+            if page.locator(".choice").count() > 0:
+                page.locator(".choice").nth(step % 2).click()
+            else:
+                number_answer(page, "1")
+            wait_for_feedback(page)
+            if step < 3:
+                shot(page, f"28-intro-feedback-{step}")
+            click(page, re.compile("^(Next|Finish session)$"))
+        else:
+            problem("the Area A introduction session did not finish in 60 steps")
+        page.get_by_text("Session complete").wait_for()
+        click(page, "Done")
+        page.get_by_role("button", name=re.compile("^Start|Skill map")).first.wait_for()
 
         # ---- G. Timer states with a fake clock ----
         page.evaluate(SEED_DUE_JS)  # the review run above rescheduled everything

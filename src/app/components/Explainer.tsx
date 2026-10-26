@@ -1,4 +1,6 @@
 import type { SkillDef } from '../../engine/types';
+import { DraftNote } from './DraftNote';
+import { RangeGrid } from './RangeGrid';
 import { Table } from './Table';
 
 /** One screen of teaching: the explainer, a worked example and further reading. */
@@ -6,6 +8,7 @@ export function Explainer({ skill, withReading = true }: { skill: SkillDef; with
   const { body, example } = skill.explainer;
   return (
     <div class="stack explainer">
+      {skill.draft && <DraftNote />}
       <div class="panel">
         {body.map((p) => (
           <p key={p}>{p}</p>
@@ -24,6 +27,16 @@ export function Explainer({ skill, withReading = true }: { skill: SkillDef; with
             ))}
           </ul>
         </div>
+        {example.rangeGrid && (
+          <div class="panel">
+            <RangeGrid grid={example.rangeGrid} />
+          </div>
+        )}
+        {example.sources && example.sources.length > 0 && (
+          <p class="small sources">
+            {example.sources.length === 1 ? 'Source' : 'Sources'}: {example.sources.join('; ')}
+          </p>
+        )}
       </div>
       {withReading && skill.furtherReading && skill.furtherReading.length > 0 && (
         <div class="panel">

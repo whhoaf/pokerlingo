@@ -1,7 +1,9 @@
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import type { GradeResult } from '../../engine/types';
 import { sortByRank } from '../../engine/cards';
+import { DraftNote } from './DraftNote';
 import { CardRow } from './PlayingCard';
+import { RangeGrid } from './RangeGrid';
 
 interface Props {
   result: GradeResult;
@@ -53,6 +55,7 @@ export function Feedback({ result, skillTitle, note, nextLabel = 'Next', onNext 
           <div class="ansline">{result.correctLabel}</div>
         </div>
         <p class="why">{result.reason}</p>
+        {result.rangeGrid && <RangeGrid grid={result.rangeGrid} />}
         {result.working && result.working.length > 0 && (
           <ul class="work">
             {result.working.map((line) => (
@@ -66,6 +69,12 @@ export function Feedback({ result, skillTitle, note, nextLabel = 'Next', onNext 
             <CardRow cards={shown} left />
           </div>
         )}
+        {result.sources && result.sources.length > 0 && (
+          <p class="small sources">
+            {result.sources.length === 1 ? 'Source' : 'Sources'}: {result.sources.join('; ')}
+          </p>
+        )}
+        {result.draft && <DraftNote />}
         {note && <div class="note-box">{note}</div>}
         <p class="small">Skill: {skillTitle}</p>
       </div>

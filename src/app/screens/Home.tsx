@@ -53,8 +53,8 @@ export function HomeScreen({
         <div class="panel panel--gold stack">
           <h2>Welcome</h2>
           <p>
-            Short daily sessions teach you to count outs, price a call and read the board. Every question is new, and the
-            app marks your answers for you.
+            Short daily sessions teach you to choose hands by seat, count outs, price a call, read the board and size a
+            bet. Every question is new, and the app marks your answers for you.
           </p>
           <p>Skills you already know are skipped, and the rest come back just before you would forget them.</p>
         </div>

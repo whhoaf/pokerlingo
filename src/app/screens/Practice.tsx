@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { PracticeRun } from '../../engine/session';
 import type { GradeResult, SkillDef } from '../../engine/types';
+import { correctChoiceIds } from '../choices';
 import { ChoiceInput } from '../components/ChoiceInput';
 import { Feedback } from '../components/Feedback';
 import { NumberInput, NumberShown } from '../components/NumberInput';
@@ -33,7 +34,7 @@ export function PracticeScreen({ run, skill, onDone }: Props) {
   };
 
   const stats = run.stats;
-  const correctId = result && q.input.kind === 'choice' ? q.input.options.find((o) => o.label === result.correctLabel)?.id : undefined;
+  const correctIds = correctChoiceIds(q, result);
 
   return (
     <div class="screen">
@@ -76,7 +77,7 @@ export function PracticeScreen({ run, skill, onDone }: Props) {
           />
         )}
         {result && q.input.kind === 'choice' && (
-          <ChoiceInput options={q.input.options} onPick={() => {}} picked={picked ?? ''} correctId={correctId} />
+          <ChoiceInput options={q.input.options} onPick={() => {}} picked={picked ?? ''} correctIds={correctIds} />
         )}
         {result && q.input.kind === 'number' && given !== undefined && (
           <NumberShown unit={q.input.unit} value={given} correct={result.correct} />

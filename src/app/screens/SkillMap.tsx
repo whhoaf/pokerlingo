@@ -2,12 +2,11 @@ import type { Area } from '../../engine/types';
 import type { Curriculum, SkillRecords } from '../../engine/curriculum';
 import { stateLabel } from '../format';
 
-/** `total` is how many skills the area will have once it is finished (PRD section 5). */
-const AREAS: { id: Area; name: string; total: number }[] = [
-  { id: 'A', name: 'Hands by seat', total: 9 },
-  { id: 'B', name: 'Outs and pot odds', total: 9 },
-  { id: 'C', name: 'Reading the board', total: 6 },
-  { id: 'D', name: 'Bet sizing', total: 5 },
+const AREAS: { id: Area; name: string }[] = [
+  { id: 'A', name: 'Hands by seat' },
+  { id: 'B', name: 'Outs and pot odds' },
+  { id: 'C', name: 'Reading the board' },
+  { id: 'D', name: 'Bet sizing' },
 ];
 
 interface Props {
@@ -27,7 +26,6 @@ export function SkillMapScreen({ curriculum, records, onOpen }: Props) {
             <h2>
               {area.id}. {area.name}
             </h2>
-            {skills.length === 0 && <p class="soft">Coming in a later update.</p>}
             {skills.map((s) => {
               const state = curriculum.stateOf(s.id, records);
               return (
@@ -43,9 +41,6 @@ export function SkillMapScreen({ curriculum, records, onOpen }: Props) {
                 </button>
               );
             })}
-            {skills.length > 0 && skills.length < area.total && (
-              <p class="soft">{`Coming in a later update: ${area.id}${skills.length + 1} to ${area.id}${area.total}.`}</p>
-            )}
           </section>
         );
       })}

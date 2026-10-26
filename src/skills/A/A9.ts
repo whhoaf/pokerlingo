@@ -32,7 +32,7 @@ export function nineTableTwin(): string {
   return seatNames(9).find((s) => backFromButton(s, 9) === back) as string;
 }
 
-function seatQuestion(seed: number, rng: ReturnType<typeof rngFor>): Question {
+function seatQuestion(chart: HouseChart, seed: number, rng: ReturnType<typeof rngFor>): Question {
   const answer = nineTableTwin();
   const options = rng.shuffle(SEAT_CHOICES).map((n) => ({ id: n, label: n }));
   return {
@@ -51,6 +51,8 @@ function seatQuestion(seed: number, rng: ReturnType<typeof rngFor>): Question {
           `9 players, in order of play: ${seatNames(9).join(', ')}.`,
           `At 6 players the chart gives the first seat the ${chartSeat('UTG', 6)} row.`,
         ],
+        // The feedback leads into the chart rows, so while the chart is a draft it carries the note too.
+        draft: chart.draft,
       };
     },
   };
@@ -103,7 +105,7 @@ export function makeA9(chart: HouseChart): SkillDef {
       sources: r.sources,
     };
   } else {
-    const q = seatQuestion(0, createRng(1));
+    const q = seatQuestion(chart, 0, createRng(1));
     const r = q.grade({ kind: 'choice', id: nineTableTwin() });
     example = { prompt: q.prompt, table: q.table, answer: r.correctLabel, working: [r.reason, ...(r.working ?? [])] };
   }
@@ -117,7 +119,7 @@ export function makeA9(chart: HouseChart): SkillDef {
     generate(seed): Question {
       const rng = rngFor('A9', seed);
       const wantHand = differing.length > 0 && rng.next() < 0.5;
-      if (!wantHand) return seatQuestion(seed, rng);
+      if (!wantHand) return seatQuestion(chart, seed, rng);
       const cls = rng.pick(differing);
       return handQuestion(chart, seed, cls, dealHand(rng, cls));
     },

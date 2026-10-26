@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { Curriculum } from '../../engine/curriculum';
 import type { Session, SessionSummary, Step } from '../../engine/session';
+import { correctChoiceIds } from '../choices';
 import { ChoiceInput } from '../components/ChoiceInput';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Explainer } from '../components/Explainer';
@@ -160,8 +161,7 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
     note = `You already know this one. ${skill.title} goes straight into your reviews. Next review: ${when}.`;
   }
 
-  const correctId =
-    result && q.input.kind === 'choice' ? q.input.options.find((o) => o.label === result.correctLabel)?.id : undefined;
+  const correctIds = correctChoiceIds(q, result);
 
   return (
     <div class="screen">
@@ -174,7 +174,7 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
         {!result && q.input.kind === 'number' && <NumberInput unit={q.input.unit} onSubmit={submitNumber} />}
 
         {result && q.input.kind === 'choice' && (
-          <ChoiceInput options={q.input.options} onPick={() => {}} picked={picked ?? ''} correctId={correctId} />
+          <ChoiceInput options={q.input.options} onPick={() => {}} picked={picked ?? ''} correctIds={correctIds} />
         )}
         {result && q.input.kind === 'number' && given !== undefined && (
           <NumberShown unit={q.input.unit} value={given} correct={result.correct} />
