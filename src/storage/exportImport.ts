@@ -2,7 +2,7 @@ import type { SkillRecord } from '../engine/curriculum';
 import type { ReviewLogRecord, SessionRecord } from '../engine/session';
 import type { StoredCard } from '../engine/scheduler';
 import { SCHEMA_VERSION, type Db } from './db';
-import { isValidSettings } from './repo';
+import { completeSettings, isValidSettings } from './repo';
 
 export interface BackupFile {
   app: 'pokerlingo';
@@ -150,7 +150,7 @@ function readMeta(value: unknown): Record<string, unknown> {
   const meta: Record<string, unknown> = { schemaVersion: SCHEMA_VERSION };
   if (value.settings !== undefined) {
     if (!isValidSettings(value.settings)) return fail('the settings are not valid');
-    meta.settings = { sessionMinutes: value.settings.sessionMinutes, newPerSession: value.settings.newPerSession };
+    meta.settings = completeSettings(value.settings);
   }
   if (value.lastExportAt !== undefined) {
     if (!isDate(value.lastExportAt)) return fail('the last export date is not valid');

@@ -5,17 +5,36 @@ import { SCHEMA_VERSION, type Db } from './db';
 export const SESSION_LENGTHS = [5, 10, 15, 20] as const;
 export const NEW_SKILL_CHOICES = [1, 2, 3] as const;
 
-export type Settings = SessionSettings;
+export interface Settings extends SessionSettings {
+  /** The moving pattern behind the app. Off draws one still frame. */
+  animatedBackground: boolean;
+}
 
-export const DEFAULT_SETTINGS: Settings = { sessionMinutes: 10, newPerSession: 2 };
+export const DEFAULT_SETTINGS: Settings = { sessionMinutes: 10, newPerSession: 2, animatedBackground: true };
 
-export function isValidSettings(value: unknown): value is Settings {
+type StoredSettings = SessionSettings & { animatedBackground?: boolean };
+
+/**
+ * Stored settings are valid when the session fields are. Backups made before the animated background
+ * switch existed have no such field, so a missing one is allowed and read as the default.
+ */
+export function isValidSettings(value: unknown): value is StoredSettings {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
     (SESSION_LENGTHS as readonly unknown[]).includes(v.sessionMinutes) &&
-    (NEW_SKILL_CHOICES as readonly unknown[]).includes(v.newPerSession)
+    (NEW_SKILL_CHOICES as readonly unknown[]).includes(v.newPerSession) &&
+    (v.animatedBackground === undefined || typeof v.animatedBackground === 'boolean')
   );
+}
+
+/** A full settings object from a stored one, filling in anything an older version did not save. */
+export function completeSettings(value: StoredSettings): Settings {
+  return {
+    sessionMinutes: value.sessionMinutes,
+    newPerSession: value.newPerSession,
+    animatedBackground: value.animatedBackground ?? DEFAULT_SETTINGS.animatedBackground,
+  };
 }
 
 export interface Repo {
@@ -57,7 +76,7 @@ export function createRepo(db: Db): Repo {
 
     async loadSettings() {
       const stored = await db.get('meta', 'settings');
-      return isValidSettings(stored) ? { ...stored } : { ...DEFAULT_SETTINGS };
+      return isValidSettings(stored) ? completeSettings(stored) : { ...DEFAULT_SETTINGS };
     },
 
     async saveSettings(settings) {

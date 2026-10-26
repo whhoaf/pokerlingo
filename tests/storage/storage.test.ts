@@ -49,7 +49,7 @@ async function fill(r: Repo) {
   await r.saveReview({ log: log('B1', true, true) }); // practice: no record
   await r.addSession(session('2026-10-24'));
   await r.addSession(session('2026-10-25', false));
-  await r.saveSettings({ sessionMinutes: 15, newPerSession: 3 });
+  await r.saveSettings({ sessionMinutes: 15, newPerSession: 3, animatedBackground: false });
 }
 
 /** Everything in the database, in a form that can be compared. */
@@ -101,15 +101,22 @@ describe('repo', () => {
   });
 
   it('saves settings and the last export time', async () => {
-    await repo.saveSettings({ sessionMinutes: 5, newPerSession: 1 });
+    await repo.saveSettings({ sessionMinutes: 5, newPerSession: 1, animatedBackground: false });
     await repo.setLastExportAt(T0.toISOString());
-    expect(await repo.loadSettings()).toEqual({ sessionMinutes: 5, newPerSession: 1 });
+    expect(await repo.loadSettings()).toEqual({ sessionMinutes: 5, newPerSession: 1, animatedBackground: false });
     expect(await repo.getLastExportAt()).toBe(T0.toISOString());
   });
 
   it('falls back to defaults if stored settings are not valid', async () => {
     await db.put('meta', { sessionMinutes: 7, newPerSession: 9 }, 'settings');
     expect(await repo.loadSettings()).toEqual(DEFAULT_SETTINGS);
+    await db.put('meta', { sessionMinutes: 10, newPerSession: 2, animatedBackground: 'yes' }, 'settings');
+    expect(await repo.loadSettings()).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it('reads settings saved before the animated background switch as having it on', async () => {
+    await db.put('meta', { sessionMinutes: 20, newPerSession: 1 }, 'settings');
+    expect(await repo.loadSettings()).toEqual({ sessionMinutes: 20, newPerSession: 1, animatedBackground: true });
   });
 
   it('survives closing and reopening the database', async () => {
@@ -130,7 +137,7 @@ describe('repo', () => {
     expect(await repo.listReviewLogs()).toEqual([]);
     expect(await repo.listSessions()).toEqual([]);
     expect(await repo.getLastExportAt()).toBeNull();
-    expect(await repo.loadSettings()).toEqual({ sessionMinutes: 15, newPerSession: 3 });
+    expect(await repo.loadSettings()).toEqual({ sessionMinutes: 15, newPerSession: 3, animatedBackground: false });
     expect(await db.get('meta', 'schemaVersion')).toBe(SCHEMA_VERSION);
   });
 });
@@ -148,7 +155,7 @@ describe('export', () => {
     expect(backup.skillStates).toHaveLength(2);
     expect(backup.reviewLogs).toHaveLength(3);
     expect(backup.sessions).toHaveLength(2);
-    expect(backup.meta.settings).toEqual({ sessionMinutes: 15, newPerSession: 3 });
+    expect(backup.meta.settings).toEqual({ sessionMinutes: 15, newPerSession: 3, animatedBackground: false });
     expect(backup.meta.lastExportAt).toBe(T0.toISOString());
   });
 
@@ -275,6 +282,7 @@ describe('a bad file', () => {
       (f) => (f.sessions[0].dayKey = '25/10/2026'),
       (f) => (f.sessions[1].finished = 1),
       (f) => (f.meta.settings = { sessionMinutes: 7, newPerSession: 2 }),
+      (f) => (f.meta.settings = { sessionMinutes: 10, newPerSession: 2, animatedBackground: 'on' }),
       (f) => (f.meta.lastExportAt = 'never'),
       (f) => (f.meta = 'none'),
       (f) => (f.reviewLogs = {}),
