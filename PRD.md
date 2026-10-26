@@ -59,6 +59,7 @@ All dates HKT.
 | D13 | 2026-10-25 | Poker advice: the chart and sizing rules are drafted from cited sources and shown to the owner when ready; review optional. Builder default, owner can change it. |
 | D14 | 2026-10-26 | Look: "Readable arcade", inspired by Balatro (pixel font for numbers, labels and buttons; system font for reading), with the larger text of the "Full arcade" sketch. Spec in `docs/DESIGN.md`. |
 | D15 | 2026-10-26 | Suits in red and black, like real cards. Builder default, owner can switch to four colours. |
+| D16 | 2026-10-26 | Chart and sizing content written from 43 researched sources (`content/`, every item cited). Facing limpers, the cutoff, button and small blind may also call (limp behind or complete) and the big blind may check, because most sources recommend it; early seats stay raise or fold. Where no source publishes a hand by hand list, the lists are built from the sources' categories and borderline hands accept either answer. |
 
 ## 4. Learning model
 

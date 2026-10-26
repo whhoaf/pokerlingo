@@ -1,40 +1,55 @@
 {
   "version": 1,
-  "draft": true,
+  "draft": false,
   "sources": {
-    "TBD": { "title": "Placeholder, to be replaced", "site": "", "url": "" }
+    "S1": { "title": "Free Preflop Charts for Poker: GTO and Exploitative Ranges", "site": "PokerCoaching.com (Jonathan Little)", "url": "https://pokercoaching.com/preflop-charts/" },
+    "S4": { "title": "How to Adjust Your Strategy on Loose and Splashy Poker Tables", "site": "Upswing Poker", "url": "https://upswingpoker.com/splashy-live-games/" },
+    "S6": { "title": "How to Beat Poker Home Games (7 Tips to Win More Often)", "site": "PokerCoaching.com", "url": "https://pokercoaching.com/blog/poker-home-games/" },
+    "S9": { "title": "3-Bet Poker Strategy: When to 3-Bet and How Big to Make It", "site": "PokerCoaching.com (Jonathan Little)", "url": "https://pokercoaching.com/blog/3-bet-poker-strategy/" },
+    "S11": { "title": "How to Maximize Your Winnings Versus Multiple Limpers", "site": "Upswing Poker", "url": "https://upswingpoker.com/vs-multiple-limpers/" },
+    "S15": { "title": "Profitable Strategies For 5 Common Preflop Spots", "site": "Red Chip Poker", "url": "https://redchippoker.com/profitable-strategies-for-5-common-preflop-spots-podcast" },
+    "S18": { "title": "Bet and Raise Sizes (1): Preflop", "site": "PokerStrategy.com", "url": "https://www.pokerstrategy.com/strategy/weekly-no-limit/bet-raise-sizes-preflop/" },
+    "S32": { "title": "Bet Sizing Strategy: 8 Rules to Help You Choose the Perfect Bet Size", "site": "Upswing Poker", "url": "https://upswingpoker.com/bet-size-strategy-tips-rules/" },
+    "S33": { "title": "What Most Players Get Wrong About C-Betting in Poker", "site": "PokerCoaching.com", "url": "https://pokercoaching.com/blog/c-betting-in-poker/" },
+    "S34": { "title": "Sizing Your C-Bets: 3 Factors You Must Consider", "site": "Upswing Poker", "url": "https://upswingpoker.com/c-bet-sizing-strategy-continuation-bet" },
+    "S36": { "title": "How to Beat Calling Stations: 5 Expert Adjustments", "site": "PokerCoaching.com", "url": "https://pokercoaching.com/blog/calling-stations-in-poker/" },
+    "S37": { "title": "Value Betting in Poker: 3 Factors That Win You Bigger Pots", "site": "PokerCoaching.com", "url": "https://pokercoaching.com/blog/value-betting-in-poker" },
+    "S38": { "title": "What is a Calling Station and How Should You Beat Them?", "site": "Upswing Poker", "url": "https://upswingpoker.com/calling-stations-poker-strategy" },
+    "S40": { "title": "Cooke's Corner: Elastic and Inelastic Bet Sizing", "site": "PokerNews (Roy Cooke)", "url": "https://www.pokernews.com/strategy/cookes-corner-elastic-and-inelastic-bet-sizing-27824.htm" },
+    "S43": { "title": "Preflop Guide for Raising First In (PDF)", "site": "Upswing Poker", "url": "https://upswingpoker.com/wp-content/uploads/2018/02/Preflop-Guide-for-RFI-v21-1.pdf" },
+    "S46": { "title": "Inelastic Ranges: How to Snowball Your Winnings vs Bad Poker Players", "site": "Upswing Poker", "url": "https://upswingpoker.com/snowball-winnings-bad-poker-players/" }
   },
   "rules": {
     "D2": {
       "title": "Preflop raise size",
       "unit": "bb",
-      "base": { "min": 4, "max": 5 },
+      "base": { "min": 3, "max": 5 },
       "perLimper": 1,
-      "reason": "Placeholder: a bigger raise makes the limpers pay to see a flop.",
-      "sources": ["TBD"]
+      "reason": "Home games call a lot, so raise bigger than online: 3 to 5 big blinds, plus 1 big blind for each player who limped.",
+      "sources": ["S11", "S6", "S4", "S43", "S15"]
     },
     "D3": {
       "title": "Re-raise size",
       "unit": "x",
-      "inPosition": { "min": 3, "max": 3.5 },
-      "outOfPosition": { "min": 4, "max": 4.5 },
-      "reason": "Placeholder: out of position, make the re-raise bigger.",
-      "sources": ["TBD"]
+      "inPosition": { "min": 3, "max": 4 },
+      "outOfPosition": { "min": 4, "max": 5 },
+      "reason": "Re-raise to about 3 times the raise when you will act after them, and about 4 times when you will act first after the flop.",
+      "sources": ["S9", "S32", "S1", "S18"]
     },
     "D4": {
       "title": "Continuation bet size",
       "unit": "pot",
-      "dry": { "min": 0.25, "max": 0.5 },
-      "wet": { "min": 0.5, "max": 0.75 },
-      "reason": "Placeholder: bet less on a dry flop and more on a wet one.",
-      "sources": ["TBD"]
+      "dry": { "min": 0.25, "max": 0.35 },
+      "wet": { "min": 0.55, "max": 0.8 },
+      "reason": "Bet small, a quarter to a third of the pot, on a dry board. Bet big, two thirds to three quarters, on a wet board where draws are possible, so they pay to chase.",
+      "sources": ["S32", "S33", "S34"]
     },
     "D5": {
       "title": "Value bet against players who call too much",
       "unit": "pot",
-      "range": { "min": 0.66, "max": 1 },
-      "reason": "Placeholder: bet big when the other player calls too often.",
-      "sources": ["TBD"]
+      "range": { "min": 0.66, "max": 1.5 },
+      "reason": "Players who call too much call a big bet almost as often as a small one, so bet big with a strong hand: at least two thirds of the pot, and up to one and a half pots.",
+      "sources": ["S37", "S46", "S38", "S40", "S36", "S6"]
     }
   }
 }

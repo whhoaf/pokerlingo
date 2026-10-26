@@ -1,8 +1,26 @@
 {
   "version": 1,
-  "draft": true,
+  "draft": false,
   "sources": {
-    "TBD": { "title": "Placeholder, to be replaced", "site": "", "url": "" }
+    "S1": { "title": "Free Preflop Charts for Poker: GTO and Exploitative Ranges", "site": "PokerCoaching.com (Jonathan Little)", "url": "https://pokercoaching.com/preflop-charts/" },
+    "S2": { "title": "Live Poker Cash Game Truths", "site": "SplitSuit Poker (James Sweeney)", "url": "https://www.splitsuit.com/live-poker-cash-game-truths" },
+    "S3": { "title": "How to Win at Live Poker (Level-Up #9)", "site": "Upswing Poker", "url": "https://upswingpoker.com/podcast/ep9-live-poker/" },
+    "S4": { "title": "How to Adjust Your Strategy on Loose and Splashy Poker Tables", "site": "Upswing Poker", "url": "https://upswingpoker.com/splashy-live-games/" },
+    "S6": { "title": "How to Beat Poker Home Games (7 Tips to Win More Often)", "site": "PokerCoaching.com", "url": "https://pokercoaching.com/blog/poker-home-games/" },
+    "S9": { "title": "3-Bet Poker Strategy: When to 3-Bet and How Big to Make It", "site": "PokerCoaching.com (Jonathan Little)", "url": "https://pokercoaching.com/blog/3-bet-poker-strategy/" },
+    "S10": { "title": "2 Winning Ways to Adjust Your Preflop Strategy in Low Stakes Live Poker", "site": "Upswing Poker", "url": "https://upswingpoker.com/live-preflop-rake-adjustments/" },
+    "S11": { "title": "How to Maximize Your Winnings Versus Multiple Limpers", "site": "Upswing Poker", "url": "https://upswingpoker.com/vs-multiple-limpers/" },
+    "S14": { "title": "What To Raise Against Many Limpers Preflop?", "site": "Red Chip Poker", "url": "https://redchippoker.com/raising-preflop-limp-fest-pots/" },
+    "S15": { "title": "Profitable Strategies For 5 Common Preflop Spots", "site": "Red Chip Poker", "url": "https://redchippoker.com/profitable-strategies-for-5-common-preflop-spots-podcast" },
+    "S19": { "title": "Cash Game Poker Strategy: A Complete Guide For $1/$2 To $2/$5", "site": "SplitSuit Poker", "url": "https://www.splitsuit.com/cash-game-poker-strategy" },
+    "S20": { "title": "Small Pocket Pair Preflop Strategy", "site": "SplitSuit Poker", "url": "https://splitsuit.com/small-pocket-pair-strategy" },
+    "S21": { "title": "Live and Casino Poker Strategy 101", "site": "SplitSuit Poker (James Sweeney)", "url": "https://splitsuit.com/live-poker-casino-strategy" },
+    "S22": { "title": "Preflop math", "site": "Crush Live Poker (Bart Hanson)", "url": "https://crushlivepoker.com/articles/preflop-math" },
+    "S26": { "title": "What is the Small Blind and How Should You Play From It?", "site": "Upswing Poker", "url": "https://upswingpoker.com/small-blind-poker-strategy-tips/" },
+    "S28": { "title": "Cash Game Poker Strategy: 10 Tips to Win More Consistently", "site": "PokerCoaching.com", "url": "https://pokercoaching.com/blog/cash-game-strategy-tips/" },
+    "S29": { "title": "Mastering Big Blind Strategy: A Guide to Profitable Defence", "site": "PokerCoaching.com", "url": "https://pokercoaching.com/blog/mastering-big-blind-strategy-a-guide-to-profitable-defence/" },
+    "S30": { "title": "How To Respond to Large Preflop Raises in Poker", "site": "GTO Wizard", "url": "https://blog.gtowizard.com/how-to-respond-to-large-preflop-raises-in-poker/" },
+    "S47": { "title": "Small Blind Strategy Before the Flop (Level Up #16)", "site": "Upswing Poker", "url": "https://upswingpoker.com/podcast/ep16-small-blind-preflop/" }
   },
   "situations": {
     "open.EP": {
@@ -10,66 +28,66 @@
       "seats": ["UTG", "UTG+1", "UTG+2"],
       "players": [7, 9],
       "choices": ["raise", "fold"],
-      "ranges": { "raise": "77+, ATs+, KQs, AQo+" },
-      "either": [{ "hands": "66, A9s", "accept": ["raise", "fold"] }],
+      "ranges": { "raise": "TT+, AJs+, AQo+" },
+      "either": [{ "hands": "77-99, ATs, KQs, KJs, QJs", "accept": ["raise", "fold"] }],
       "default": "fold",
-      "reason": "Placeholder: early seats act first, so only strong hands open.",
-      "sources": ["TBD"]
+      "reason": "Most of the table acts after you, and home game raises often get several callers, so open only your strongest hands.",
+      "sources": ["S19", "S2", "S3", "S20"]
     },
     "open.LJ": {
       "title": "Folded to you in the lojack",
       "seats": ["LJ"],
       "players": [6, 9],
       "choices": ["raise", "fold"],
-      "ranges": { "raise": "66+, A9s+, KTs+, QTs+, JTs, AJo+, KQo" },
-      "either": [{ "hands": "55, A8s, T9s", "accept": ["raise", "fold"] }],
+      "ranges": { "raise": "77+, ATs+, KJs+, QJs, AQo+" },
+      "either": [{ "hands": "66, A9s, KTs, QTs, JTs, AJo, KQo", "accept": ["raise", "fold"] }],
       "default": "fold",
-      "reason": "Placeholder: a few more hands open from the lojack.",
-      "sources": ["TBD"]
+      "reason": "Several players still act after you, so stay tight, but open a little more than the early seats.",
+      "sources": ["S2", "S19", "S1"]
     },
     "open.HJ": {
       "title": "Folded to you in the hijack",
       "seats": ["HJ"],
       "players": [6, 9],
       "choices": ["raise", "fold"],
-      "ranges": { "raise": "55+, A7s+, A5s, K9s+, Q9s+, J9s+, T9s, 98s, ATo+, KJo+" },
-      "either": [{ "hands": "44, 87s, QJo", "accept": ["raise", "fold"] }],
+      "ranges": { "raise": "66+, A9s+, KTs+, QTs+, JTs, AJo+, KQo" },
+      "either": [{ "hands": "55, A2s-A8s, T9s, ATo, KJo", "accept": ["raise", "fold"] }],
       "default": "fold",
-      "reason": "Placeholder: the hijack opens a wider range.",
-      "sources": ["TBD"]
+      "reason": "Fewer players are left behind you, so you can open more pairs, suited aces and high cards.",
+      "sources": ["S19", "S21", "S1"]
     },
     "open.CO": {
       "title": "Folded to you in the cutoff",
       "seats": ["CO"],
       "players": [6, 9],
       "choices": ["raise", "fold"],
-      "ranges": { "raise": "44+, A2s+, K8s+, Q9s+, J9s+, T9s, 98s, 87s, A9o+, KTo+, QJo" },
-      "either": [{ "hands": "33, 76s, 65s, QTo", "accept": ["raise", "fold"] }],
+      "ranges": { "raise": "55+, A2s+, KTs+, QTs+, JTs, T9s, ATo+, KJo+" },
+      "either": [{ "hands": "22-44, K9s, Q9s, J9s, T8s, 98s, 87s, 76s, A9o, KTo, QJo", "accept": ["raise", "fold"] }],
       "default": "fold",
-      "reason": "Placeholder: only the button and the blinds are left to act.",
-      "sources": ["TBD"]
+      "reason": "Only the button and the blinds are left, so open wide. The cutoff and the button are where home games are won.",
+      "sources": ["S6", "S3", "S20", "S1"]
     },
     "open.BTN": {
       "title": "Folded to you on the button",
       "seats": ["BTN"],
       "players": [6, 9],
       "choices": ["raise", "fold"],
-      "ranges": { "raise": "22+, A2s+, K5s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 76s, 65s, A7o+, K9o+, QTo+, JTo" },
-      "either": [{ "hands": "54s, A5o, K8o", "accept": ["raise", "fold"] }],
+      "ranges": { "raise": "22+, A2s+, K9s+, Q9s+, J9s+, T8s+, 98s, 87s, 76s, A9o+, KTo+, QJo" },
+      "either": [{ "hands": "K4s-K8s, Q7s-Q8s, J8s, T7s, 97s, 86s, 65s, 54s, A5o-A8o, K9o, Q9o, J9o, T9o, QTo, JTo", "accept": ["raise", "fold"] }],
       "default": "fold",
-      "reason": "Placeholder: the button acts last after the flop, so it opens the most hands.",
-      "sources": ["TBD"]
+      "reason": "You act last after the flop, the best seat at the table, so you open the most hands. Play 3 to 5 times as many hands here as from the first seat.",
+      "sources": ["S21", "S6", "S3", "S1"]
     },
     "open.SB": {
       "title": "Small blind, folded to you",
       "seats": ["SB"],
       "players": [6, 9],
       "choices": ["raise", "fold"],
-      "ranges": { "raise": "33+, A2s+, K7s+, Q9s+, J9s+, T9s, 98s, 87s, A8o+, KTo+, QJo" },
-      "either": [{ "hands": "22, 76s, A7o", "accept": ["raise", "fold"] }],
+      "ranges": { "raise": "22+, A2s+, K9s+, Q9s+, J9s+, T8s+, 98s, 87s, 76s, A9o+, KTo+, QJo" },
+      "either": [{ "hands": "K4s-K8s, Q7s-Q8s, J8s, T7s, 97s, 86s, 65s, 54s, A5o-A8o, K9o, Q9o, J9o, T9o, QTo, JTo", "accept": ["raise", "fold"] }],
       "default": "fold",
-      "reason": "Placeholder: only the big blind is left to beat, but you act first after the flop.",
-      "sources": ["TBD"]
+      "reason": "Only the big blind is left, so play the button's hands. Raise or fold, never limp: you will act first on every street after the flop.",
+      "sources": ["S26", "S47", "S1"]
     },
     "limpers.early": {
       "title": "Facing limpers from an early or middle seat",
@@ -77,23 +95,26 @@
       "players": [6, 9],
       "limpers": [1, 3],
       "choices": ["raise", "fold"],
-      "ranges": { "raise": "TT+, AJs+, AQo+" },
-      "either": [{ "hands": "99, ATs, KQs", "accept": ["raise", "fold"] }],
+      "ranges": { "raise": "TT+, AQs+, AQo+" },
+      "either": [{ "hands": "77-99, ATs, AJs, KQs, KJs, QJs, AJo, KQo", "accept": ["raise", "fold"] }],
       "default": "fold",
-      "reason": "Placeholder: limpers make the pot bigger, so raise your strong hands.",
-      "sources": ["TBD"]
+      "reason": "Raise your strong hands to punish the limpers. The more players limp, the tighter you raise, and with many players still behind you, do not limp along.",
+      "sources": ["S11", "S14", "S19"]
     },
     "limpers.late": {
       "title": "Facing limpers from the cutoff or button",
       "seats": ["CO", "BTN"],
       "players": [6, 9],
       "limpers": [1, 3],
-      "choices": ["raise", "fold"],
-      "ranges": { "raise": "77+, A9s+, KTs+, QTs+, JTs, T9s, 98s, ATo+, KQo" },
-      "either": [{ "hands": "66, 87s, KJo", "accept": ["raise", "fold"] }],
+      "choices": ["raise", "call", "fold"],
+      "ranges": {
+        "raise": "TT+, AQs+, AQo+",
+        "call": "22-66, A2s-A9s, KTs, QTs, T9s, 98s, 87s, 76s, 65s, 54s"
+      },
+      "either": [{ "hands": "77-99, ATs, AJs, KQs, KJs, QJs, JTs, AJo, KQo", "accept": ["raise", "call"] }],
       "default": "fold",
-      "reason": "Placeholder: in late seats you can raise more hands over limpers.",
-      "sources": ["TBD"]
+      "reason": "Raise your best hands. In position and at a cheap price, just call with small pairs, suited aces and suited connectors, which can win a big pot. Never limp behind with AA or KK.",
+      "sources": ["S11", "S3", "S14"]
     },
     "limpers.SB": {
       "title": "Small blind facing limpers",
@@ -102,13 +123,13 @@
       "limpers": [1, 3],
       "choices": ["raise", "call", "fold"],
       "ranges": {
-        "raise": "TT+, AJs+, AQo+, KQs",
-        "call": "22-99, A2s-ATs, K9s-KJs, QTs+, JTs, T9s, 98s, 87s, ATo-AJo, KQo, KJo"
+        "raise": "TT+, AQs+, AQo+",
+        "call": "22-66, A2s-A9s, K2s-KTs, Q2s-QTs, J2s-JTs, T2s-T9s, 92s-98s, 82s-87s, 72s-76s, 62s-65s, 52s-54s, 42s-43s, 32s, A2o-ATo, K2o-KJo, Q2o-QJo, J2o-JTo, T2o-T9o, 96o-98o, 85o-87o, 74o-76o, 63o-65o, 52o-54o, 42o-43o, 32o"
       },
-      "either": [{ "hands": "76s, QJo", "accept": ["call", "fold"] }],
+      "either": [{ "hands": "77-99, ATs, AJs, KQs, KJs, QJs, AJo, KQo", "accept": ["raise", "call"] }],
       "default": "fold",
-      "reason": "Placeholder: you already have a blind in, so some hands can just call.",
-      "sources": ["TBD"]
+      "reason": "You already have half a bet in and the pot is big, so complete with almost anything suited, connected or ten high and better. Raise your strong hands and fold only real trash such as 83 or 72 offsuit.",
+      "sources": ["S47", "S14", "S15"]
     },
     "limpers.BB": {
       "title": "Big blind facing limpers",
@@ -116,49 +137,62 @@
       "players": [6, 9],
       "limpers": [1, 3],
       "choices": ["raise", "check"],
-      "ranges": { "raise": "JJ+, AQs+, AKo" },
-      "either": [{ "hands": "TT, AJs", "accept": ["raise", "check"] }],
+      "ranges": { "raise": "TT+, AQs+, AQo+" },
+      "either": [{ "hands": "77-99, ATs, AJs, KQs, KJs, AJo, KQo", "accept": ["raise", "check"] }],
       "default": "check",
-      "reason": "Placeholder: you can see the flop for free, so raise only your best hands.",
-      "sources": ["TBD"]
+      "reason": "You see the flop for free, so check most hands. Raise your strong hands for value, and raise bigger because you will act first after the flop.",
+      "sources": ["S14", "S15"]
     },
     "raise.vsEarly": {
       "title": "Facing a raise from an early seat",
-      "seats": ["HJ", "CO", "BTN", "SB"],
+      "seats": ["HJ", "CO", "BTN"],
       "players": [6, 9],
       "raiser": ["UTG", "UTG+1", "UTG+2", "LJ"],
       "choices": ["reraise", "call", "fold"],
-      "ranges": { "reraise": "QQ+, AKs, AKo", "call": "88-JJ, AQs, AJs, KQs, AQo" },
-      "either": [{ "hands": "77, ATs", "accept": ["call", "fold"] }],
+      "ranges": { "reraise": "QQ+, AKs, AKo", "call": "88-TT" },
+      "either": [
+        { "hands": "JJ, AQs", "accept": ["reraise", "call"] },
+        { "hands": "22-77, ATs, AJs, KQs, KJs, QJs, JTs, T9s, 98s, AQo", "accept": ["call", "fold"] }
+      ],
       "default": "fold",
-      "reason": "Placeholder: an early raiser has a strong hand, so you need one too.",
-      "sources": ["TBD"]
+      "reason": "An early raise means a strong hand. Re-raise only your best hands, call with pairs and suited hands that flop well, and fold offsuit hands like KJ and AT that are often beaten by a better kicker.",
+      "sources": ["S9", "S2", "S22", "S1"]
     },
     "raise.vsLate": {
       "title": "Facing a raise from a late seat",
-      "seats": ["BTN", "SB"],
+      "seats": ["CO", "BTN"],
       "players": [6, 9],
-      "raiser": ["HJ", "CO", "BTN"],
+      "raiser": ["HJ", "CO"],
       "choices": ["reraise", "call", "fold"],
-      "ranges": { "reraise": "TT+, AQs+, AKo", "call": "66-99, ATs-AJs, KQs, QJs, JTs, T9s, AQo" },
-      "either": [{ "hands": "55, 98s", "accept": ["call", "fold"] }],
+      "ranges": {
+        "reraise": "JJ+, AQs+, AKo",
+        "call": "22-88, A2s-A9s, KTs, QTs, JTs, T9s, 98s, 87s, 76s"
+      },
+      "either": [
+        { "hands": "99, TT, AQo, AJs, ATs, KQs, KJs, QJs", "accept": ["reraise", "call"] },
+        { "hands": "65s, 54s, AJo, KQo", "accept": ["call", "fold"] }
+      ],
       "default": "fold",
-      "reason": "Placeholder: a late raiser opens many hands, so you can play more of yours.",
-      "sources": ["TBD"]
+      "reason": "A late raiser opens many hands, so re-raise more hands for value. In position, call with pairs, suited aces and suited connectors. Players here call re-raises too often, so do not bluff.",
+      "sources": ["S9", "S4", "S10", "S22"]
     },
     "bb.vsRaise": {
       "title": "Big blind facing a raise",
       "seats": ["BB"],
       "players": [6, 9],
+      "raiser": ["CO", "BTN", "SB"],
       "choices": ["reraise", "call", "fold"],
       "ranges": {
         "reraise": "QQ+, AKs, AKo",
-        "call": "22-JJ, A2s-AQs, K9s+, Q9s+, J9s+, T9s, 98s, 87s, 76s, 65s, ATo-AQo, KJo+, QJo"
+        "call": "22-99, A2s-AJs, KTs+, QTs+, JTs, T9s, 98s, 87s, 76s, 65s, 54s, AJo, KQo"
       },
-      "either": [{ "hands": "T8s, 54s", "accept": ["call", "fold"] }],
+      "either": [
+        { "hands": "TT, JJ, AQs, AQo", "accept": ["reraise", "call"] },
+        { "hands": "K9s, Q9s, J9s, T8s, 97s, 86s, 75s, 64s, 53s, ATo, KJo, KTo, QJo, QTo, JTo", "accept": ["call", "fold"] }
+      ],
       "default": "fold",
-      "reason": "Placeholder: you already have a blind in, so you can call with more hands.",
-      "sources": ["TBD"]
+      "reason": "You already have a big blind in and you close the action, so defend more hands than any other seat, mostly suited and connected ones. You act first after the flop, so fold weak offsuit hands.",
+      "sources": ["S29", "S28", "S4", "S30"]
     }
   }
 }
