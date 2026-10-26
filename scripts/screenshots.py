@@ -98,6 +98,35 @@ def number_answer(page: Page, value: str) -> None:
     page.get_by_role("button", name="Check").click()
 
 
+CANVAS_TONE_JS = """
+() => {
+  const c = document.getElementById('bg');
+  const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+  const sum = [0, 0, 0];
+  for (let k = 0; k < d.length; k += 4) for (let i = 0; i < 3; i++) sum[i] += d[k + i];
+  return sum.map((v) => v / (d.length / 4));
+}
+"""
+
+# What each mood of the background must look like, as a test on the average colour.
+TONES = {
+    "green": lambda r, g, b: g > r and g > b,
+    "blue": lambda r, g, b: b > r and b > g,
+    "red": lambda r, g, b: r > g * 1.5 and r > b * 1.5,
+    "purple": lambda r, g, b: r > g and b > g,
+}
+
+
+def expect_tone(page: Page, mood: str, where: str) -> None:
+    """The background blends to its new colours over about a second, so poll for a while."""
+    for _ in range(40):
+        r, g, b = page.evaluate(CANVAS_TONE_JS)
+        if TONES[mood](r, g, b):
+            return
+        page.wait_for_timeout(100)
+    problem(f"{where}: the background should be {mood}, average colour is {r:.0f}, {g:.0f}, {b:.0f}")
+
+
 def open_tab(page: Page, name: str) -> None:
     """Go to Today, Skills or Settings. Home has buttons instead of the tab bar."""
     tab = page.locator(".tab", has_text=name)
@@ -293,6 +322,11 @@ def main() -> None:
             return ctx
 
         def watch(page: Page) -> None:
+            # The app must never talk to another server.
+            page.on(
+                "request",
+                lambda r: None if r.url.startswith(("http://localhost:4173/", "data:", "blob:")) else problem("outside request: " + r.url),
+            )
             page.on("console", lambda m: console_errors.append(m.text) if m.type == "error" else None)
             page.on("pageerror", lambda e: console_errors.append(str(e)))
 
@@ -312,6 +346,7 @@ def main() -> None:
         # ---- B. First session: B1 is placed, then C1 (reading the board) is met ----
         click(page, "Start a 10-minute session")
         wait_tag(page, "New skill", "1 of 2")
+        expect_tone(page, "blue", "new skill question")
         shot(page, "03-probe-question")
         page.locator("input[type=text]").fill("9")
         shot(page, "04-probe-number-filled")
@@ -361,6 +396,7 @@ def main() -> None:
                 if page.get_by_text("Session complete").count() > 0 or outcome == "correct":
                     break
         page.get_by_text("Session complete").wait_for()
+        expect_tone(page, "purple", "summary")
         shot(page, "13-summary")
         click(page, "Done")
         page.get_by_text("Done for today").wait_for()
@@ -409,7 +445,19 @@ def main() -> None:
         page.get_by_role("button", name="10 min").click()
         page.get_by_role("button", name="2", exact=True).click()
 
+        # The animated background switch is on by default, saves with the settings and goes into backups.
+        switch = page.get_by_role("switch", name="Animated background")
+        if switch.get_attribute("aria-checked") != "true":
+            problem("the animated background switch should start on")
+        switch.click()
+        page.wait_for_timeout(400)  # the setting is saved and reloaded first
+        if switch.get_attribute("aria-checked") != "false":
+            problem("the animated background switch did not turn off")
+        shot(page, "18-settings-background-off")
+
         before = dump_db(page)
+        if before["meta"]["settings"].get("animatedBackground") is not False:
+            problem("the animated background setting was not saved")
         with page.expect_download() as download:
             click(page, "Export progress")
         backup_path = OUT / "backup.json"
@@ -460,6 +508,16 @@ def main() -> None:
         if json.dumps(dump_db(page), sort_keys=True) != json.dumps(after, sort_keys=True):
             problem("data changed across a reload")
         print("progress survives a reload")
+        open_tab(page, "Settings")
+        switch = page.get_by_role("switch", name="Animated background")
+        if switch.get_attribute("aria-checked") != "false":
+            problem("the animated background setting did not survive the import and a reload")
+        switch.click()
+        page.wait_for_timeout(400)
+        if dump_db(page)["meta"]["settings"].get("animatedBackground") is not True:
+            problem("the animated background setting did not turn back on")
+        open_tab(page, "Today")
+        page.get_by_text("Done for today").wait_for()
 
         # ---- F. Every new skill: explainer, question, right and wrong feedback ----
         # Seeding all 16 skills as introduced unlocks the lot, so each can be practised.
@@ -531,9 +589,11 @@ def main() -> None:
         page2.get_by_text("still due will roll over").wait_for()
         page2.get_by_role("button", name=re.compile("Start")).click()
         page2.locator(".prompt").wait_for()
+        expect_tone(page2, "green", "review question")
         shot(page2, "33-timer-full")
         page2.clock.run_for(9 * 60 * 1000 + 20_000)
         page2.wait_for_timeout(500)
+        expect_tone(page2, "red", "under one minute")
         shot(page2, "34-timer-low")
         page2.clock.run_for(2 * 60 * 1000)
         page2.wait_for_timeout(500)
