@@ -10,9 +10,9 @@ import {
   AREA_A_READING,
   GRID_PARAGRAPH,
   chartSources,
-  describeSituation,
   labelList,
   namedRing,
+  situationBlock,
 } from './common';
 import { spotQuestion } from './situationSkill';
 
@@ -126,10 +126,10 @@ export function makeA9(chart: HouseChart): SkillDef {
     explainer: {
       body: [
         'Your seat decides which row of the chart you use, and the number of players decides which seats exist. At 6 players the first seat to act plays like the lojack. At 7 to 9 players the early seats have their own row.',
-        `${describeSituation(chart, 'open.EP')} ${describeSituation(chart, 'open.LJ')}`,
         'Count back from the button to compare seats at different table sizes. At 6 players the first seat is 3 seats back, which is the lojack at 9 players.',
         GRID_PARAGRAPH,
       ],
+      situations: [situationBlock(chart, 'open.EP'), situationBlock(chart, 'open.LJ')],
       example,
     },
     furtherReading: AREA_A_READING,

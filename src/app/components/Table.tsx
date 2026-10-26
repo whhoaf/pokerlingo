@@ -1,6 +1,6 @@
 import type { TableView } from '../../engine/types';
 import { PlayingCard } from './PlayingCard';
-import { SeatRingView } from './SeatRing';
+import { SeatRingView, revealFocus } from './SeatRing';
 
 /** Cards are dealt one after another, this many milliseconds apart. */
 const DEAL_GAP = 120;
@@ -14,8 +14,12 @@ function Chip({ label, value, bet = false }: { label: string; value: string | nu
   );
 }
 
-/** The felt: pot and bet as chips, the board, your cards slightly fanned, and a note in gold. */
-export function Table({ table }: { table: TableView }) {
+/**
+ * The felt: pot and bet as chips, the board, your cards slightly fanned, and a note in gold.
+ * `reveal` is the name of the highlighted seat once the answer is checked (Area A1 hides it until then).
+ */
+export function Table({ table, reveal }: { table: TableView; reveal?: string }) {
+  const ring = table.ring && reveal !== undefined ? revealFocus(table.ring, reveal) : table.ring;
   const hasChips = table.pot !== undefined || table.bet !== undefined || table.seat || table.players;
   const board = table.board ?? [];
   const villain = table.villain ?? [];
@@ -23,6 +27,11 @@ export function Table({ table }: { table: TableView }) {
   // Deal order follows the order on screen, so each card lands a beat after the one before.
   let dealt = 0;
   const next = () => dealt++ * DEAL_GAP;
+  // With a seat picture and no board, your cards sit on the oval of the table. That saves a row of height on a phone.
+  const handInRing = !!ring && hole.length > 0 && board.length === 0 && villain.length === 0;
+  const handCards = hole.map((c, i) => (
+    <PlayingCard key={c} card={c} size="hand" tilt={hole.length === 2 ? (i === 0 ? -5 : 5) : 0} delay={next()} />
+  ));
   return (
     <div class="felt" aria-label="Table">
       {hasChips && (
@@ -33,7 +42,15 @@ export function Table({ table }: { table: TableView }) {
           {table.bet !== undefined && <Chip label="Bet to call" value={table.bet} bet />}
         </div>
       )}
-      {table.ring && <SeatRingView ring={table.ring} />}
+      {ring && (
+        <SeatRingView ring={ring} note={handInRing ? undefined : table.note}>
+          {handInRing && (
+            <div class="card-row card-row--hand" role="group" aria-label="Your cards">
+              {handCards}
+            </div>
+          )}
+        </SeatRingView>
+      )}
       {villain.length > 0 && (
         <div>
           <div class="lbl">Opponent</div>
@@ -54,17 +71,13 @@ export function Table({ table }: { table: TableView }) {
           </div>
         </div>
       )}
-      {hole.length > 0 && (
+      {hole.length > 0 && !handInRing && (
         <div>
           <div class="lbl">Your cards</div>
-          <div class="card-row card-row--hand">
-            {hole.map((c, i) => (
-              <PlayingCard key={c} card={c} size="hand" tilt={hole.length === 2 ? (i === 0 ? -5 : 5) : 0} delay={next()} />
-            ))}
-          </div>
+          <div class="card-row card-row--hand">{handCards}</div>
         </div>
       )}
-      {table.note && <div class="felt-note">{table.note}</div>}
+      {table.note && (!ring || handInRing) && <div class="felt-note">{table.note}</div>}
     </div>
   );
 }

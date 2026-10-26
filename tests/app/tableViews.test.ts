@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { correctChoiceIds } from '../../src/app/choices';
 import { gridLabel } from '../../src/app/components/RangeGrid';
-import { ringLabel, seatPosition } from '../../src/app/components/SeatRing';
+import { revealFocus, ringLabel, seatPosition } from '../../src/app/components/SeatRing';
+import { spotRing } from '../../src/skills/A/common';
 import { HAND_CLASSES } from '../../src/engine/ranges';
 import type { GradeResult, Question, RangeGridView, SeatRing } from '../../src/engine/types';
 import { DASHES } from '../helpers/dashes';
@@ -91,6 +92,29 @@ describe('the table picture', () => {
     expect(text).toContain('CO: you.');
     expect(text).not.toContain('HJ');
     expect(text).not.toMatch(DASHES);
+  });
+
+  it('names the highlighted seat once the answer is checked, and changes nothing else', () => {
+    const ring: SeatRing = { focus: 1, seats: [{ name: null }, { name: null, role: 'focus' }, { name: null, button: true }, { name: null }, { name: null }, { name: null }] };
+    const shown = revealFocus(ring, 'HJ');
+    expect(shown.seats[1]).toEqual({ name: 'HJ', role: 'focus' });
+    expect(shown.seats.filter((s) => s.name !== null)).toHaveLength(1);
+    expect(shown.focus).toBe(1);
+    expect(ring.seats[1]!.name).toBeNull(); // the question itself is untouched
+    expect(ringLabel(shown)).toContain('HJ: highlighted.');
+    // A seat that already has a name keeps it.
+    const named: SeatRing = { focus: 0, seats: [{ name: 'CO', role: 'you' }, { name: 'BTN', button: true }] };
+    expect(revealFocus(named, 'BB')).toEqual(named);
+  });
+
+  it('shows the raise size in chips on the raiser, when the question has one', () => {
+    const spot = { players: 6, hero: 'BTN', limpers: [], raiser: 'CO' };
+    const withSize = spotRing({ ...spot, raiseTo: 8 }).seats.find((s) => s.role === 'raise');
+    expect(withSize).toMatchObject({ name: 'CO', tag: '8 chips' });
+    expect(ringLabel(spotRing({ ...spot, raiseTo: 8 }))).toContain('CO: raised to 8 chips.');
+    expect(ringLabel(spotRing(spot))).toContain('CO: raised.');
+    const without = spotRing(spot).seats.find((s) => s.role === 'raise');
+    expect(without).toMatchObject({ name: 'CO', tag: 'Raise' });
   });
 
   it('does not name a hidden seat', () => {

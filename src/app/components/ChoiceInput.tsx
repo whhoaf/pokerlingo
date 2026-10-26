@@ -13,8 +13,14 @@ interface Props {
 export function ChoiceInput({ options, onPick, picked, correctIds }: Props) {
   const locked = picked !== undefined;
   const withCards = options.some((o) => o.cards);
+  // Four short labels, such as seat names, sit two by two. That saves two rows of height on a phone.
+  const pairs = !withCards && options.length === 4 && options.every((o) => o.label.length <= 5);
   return (
-    <div class={withCards ? 'choices choices--cards' : 'choices'} role="group" aria-label="Answer choices">
+    <div
+      class={withCards ? 'choices choices--cards' : pairs ? 'choices choices--pairs' : 'choices'}
+      role="group"
+      aria-label="Answer choices"
+    >
       {options.map((o) => {
         const classes = ['choice'];
         if (locked && o.id === picked) classes.push('choice--picked');

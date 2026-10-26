@@ -30,6 +30,17 @@ export interface RangeGridView {
   yours?: string;
 }
 
+/** One situation in an Area A explainer: its title, reason and chart, and the range string when it is short. */
+export interface SituationBlock {
+  title: string;
+  /** Where it applies, for example 'UTG, UTG+1, UTG+2 at 7 to 9 players'. */
+  where: string;
+  reason: string;
+  /** The ranges as written in the chart. Left out when they are long, because the grid carries them. */
+  range?: string;
+  grid: RangeGridView;
+}
+
 export interface TableView {
   ring?: SeatRing; // the table with its seats (Areas A and D)
   hole?: Card[]; // your cards
@@ -78,6 +89,8 @@ export interface SkillDef {
   generate(seed: number): Question; // deterministic for a given seed
   explainer: {
     body: string[]; // short paragraphs, one screen in total
+    /** Area A: one block per chart situation, shown after the body. */
+    situations?: SituationBlock[];
     example: {
       prompt: string;
       table: TableView;

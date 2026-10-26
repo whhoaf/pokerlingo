@@ -15,10 +15,10 @@ import {
   chartSources,
   classOf,
   classWords,
-  describeSituation,
   labelList,
   pickHandClass,
   pickSpot,
+  situationBlock,
   spotRing,
   type SpotSeats,
 } from './common';
@@ -174,12 +174,8 @@ export function makeSituationSkill(chart: HouseChart, spec: SituationSkillSpec):
       return spotQuestion({ skillId: spec.id, seed, chart, situation: id, spot, hole: dealHand(rng, cls) });
     },
     explainer: {
-      body: [
-        spec.intro,
-        spec.situations.map((id) => describeSituation(chart, id)).join(' '),
-        NOTATION_PARAGRAPH,
-        GRID_PARAGRAPH,
-      ],
+      body: [spec.intro, NOTATION_PARAGRAPH, GRID_PARAGRAPH],
+      situations: spec.situations.map((id) => situationBlock(chart, id)),
       example: {
         prompt: exQuestion.prompt,
         table: exQuestion.table,

@@ -54,7 +54,7 @@ export function PracticeScreen({ run, skill, onDone }: Props) {
         </button>
       </header>
 
-      <Table key={`${q.skillId}-${q.seed}`} table={q.table} />
+      <Table key={`${q.skillId}-${q.seed}`} table={q.table} reveal={result?.correctLabel} />
       <p class="panel prompt">{q.prompt}</p>
 
       <div class="answer">

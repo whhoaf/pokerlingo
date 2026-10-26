@@ -79,6 +79,45 @@ describe('pixel font sizes', () => {
   });
 });
 
+/** WCAG relative luminance and contrast ratio of two #rrggbb colours. */
+function contrast(a: string, b: string): number {
+  const lum = (hex: string) => {
+    const [r, g, bl] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * bl!;
+  };
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
+}
+
+describe('colour contrast of the fixed pairs', () => {
+  const root = rules.find((r) => r.selectors.includes(':root'))!;
+  const token = (name: string) => new RegExp(`${name}:\\s*(#[0-9a-fA-F]{6})`).exec(root.body)![1]!;
+  /** Everything the stylesheet sets for one selector, whichever rules say it. */
+  const rule = (selector: string): Rule => ({
+    selectors: [selector],
+    body: rules.filter((r) => r.selectors.includes(selector)).map((r) => r.body).join(';'),
+  });
+  const prop = (r: Rule, name: string) => new RegExp(`(?:^|[;\\s])${name}:\\s*([^;]+)`).exec(r.body)?.[1]?.trim();
+  const resolve = (value: string | undefined) => token(/var\((--[\w-]+)\)/.exec(value ?? '')![1]!);
+
+  it('keeps the gold note on the felt at 4.5 to 1 or better against a solid backing', () => {
+    const note = rule('.felt-note');
+    // A solid token colour, never a translucent one: the swirl behind the felt must not change the contrast.
+    expect(prop(note, 'background')).toMatch(/^var\(--[\w-]+\)$/);
+    expect(contrast(resolve(prop(note, 'color')), resolve(prop(note, 'background')))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('makes the disabled button a solid panel with light text and no see-through', () => {
+    const disabled = rule('.btn:disabled');
+    expect(prop(disabled, 'opacity')).toBeUndefined();
+    expect(prop(disabled, 'background')).toMatch(/^var\(--[\w-]+\)$/);
+    expect(prop(disabled, 'box-shadow')).toMatch(/0 6px 0 var\(--/); // the hard shadow stays
+    expect(contrast(resolve(prop(disabled, 'color')), resolve(prop(disabled, 'background')))).toBeGreaterThanOrEqual(4.5);
+    // It is clearly unlike the enabled blue button.
+    expect(contrast(resolve(prop(disabled, 'background')), token('--blue'))).toBeGreaterThan(1.5);
+  });
+});
+
 describe('design tokens', () => {
   const root = rules.find((r) => r.selectors.includes(':root'))!;
 

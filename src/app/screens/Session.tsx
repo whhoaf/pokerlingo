@@ -166,7 +166,7 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
   return (
     <div class="screen">
       {top}
-      <Table key={`${q.skillId}-${q.seed}`} table={q.table} />
+      <Table key={`${q.skillId}-${q.seed}`} table={q.table} reveal={result?.correctLabel} />
       <p class="panel prompt">{q.prompt}</p>
 
       <div class="answer">

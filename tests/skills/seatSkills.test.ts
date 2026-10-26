@@ -27,6 +27,7 @@ import {
 } from '../helpers/chartOracle';
 import { SEEDS, checkGrading, checkQuestionBasics, noDashes, pick } from '../helpers/skillChecks';
 import { spotQuestion } from '../../src/skills/A/situationSkill';
+import { SHORT_RANGE_CHARS, rangeLength } from '../../src/skills/A/common';
 import type { Action } from '../../src/content/types';
 
 const SITUATIONS_OF: Record<string, SituationId[]> = {
@@ -233,19 +234,52 @@ describe.each(Object.keys(MAKERS))('%s', (skillId) => {
 
 describe.each(ALL_CHARTS)('the Area A explainers with the %s', (_label, chart) => {
   for (const skillId of Object.keys(MAKERS)) {
-    it(`${skillId}: quotes every range from the chart and the worked example matches the chart`, () => {
+    it(`${skillId}: gives each situation its own block and the worked example matches the chart`, () => {
       const skill = MAKERS[skillId]!(chart);
-      const body = skill.explainer.body.join(' ');
       expect(skill.explainer.body.length).toBeGreaterThanOrEqual(3);
       expect(skill.explainer.body.length).toBeLessThanOrEqual(5);
+      const blocks = skill.explainer.situations!;
+      expect(blocks.map((b) => b.title)).toEqual(SITUATIONS_OF[skillId]!.map((id) => chart.situations[id].title));
+      SITUATIONS_OF[skillId]!.forEach((id, i) => {
+        const s = chart.situations[id];
+        const block = blocks[i]!;
+        // One short paragraph per situation: its reason, as written, and where it applies.
+        expect(block.reason).toBe(s.reason);
+        expect(block.where).toContain(s.seats.join(', '));
+        // The grid is the chart: 169 cells, the legend in button order, no hand outlined.
+        expect(Object.keys(block.grid.cells)).toHaveLength(169);
+        expect(block.grid.yours).toBeUndefined();
+        expect(block.grid.legend.map((l) => l.action)).toEqual(s.choices);
+        for (const cls of HAND_CLASSES) expect(block.grid.cells[cls]!.action, `${id} ${cls}`).toBe(oracleAccept(s, cls)[0]);
+        // The range string is printed only when the ranges are short, and then it quotes every range as written.
+        const texts = [...Object.values(s.ranges), ...(s.either ?? []).map((e) => e.hands)].map((t) => t.trim()).filter((t) => t !== '');
+        const length = texts.reduce((n, t) => n + t.length, 0);
+        if (length <= SHORT_RANGE_CHARS) {
+          expect(block.range, id).toBeDefined();
+          for (const t of texts) expect(block.range, `${id}: ${t}`).toContain(t);
+          expect(block.range).toContain(`Every other hand: ${ACTION_LABELS[s.default]}.`);
+        } else {
+          expect(block.range, id).toBeUndefined();
+        }
+      });
+      // A long range string never appears anywhere in the text of the explainer.
+      const everything = [
+        ...skill.explainer.body,
+        ...blocks.flatMap((b) => [b.title, b.where, b.reason, b.range ?? '']),
+      ].join(' ');
       for (const id of SITUATIONS_OF[skillId]!) {
         const s = chart.situations[id];
-        expect(body).toContain(s.title);
-        for (const text of Object.values(s.ranges)) if (text.trim() !== '') expect(body, `${id}: ${text}`).toContain(text);
-        for (const e of s.either ?? []) expect(body).toContain(e.hands);
-        expect(body).toContain(ACTION_LABELS[s.default]);
+        for (const t of [...Object.values(s.ranges), ...(s.either ?? []).map((e) => e.hands)]) {
+          if (t.trim().length > SHORT_RANGE_CHARS) expect(everything, `${id}: long range`).not.toContain(t);
+        }
       }
-      for (const line of [...skill.explainer.body, skill.explainer.example.prompt, skill.explainer.example.answer, ...skill.explainer.example.working]) {
+      for (const line of [
+        ...skill.explainer.body,
+        ...blocks.flatMap((b) => [b.title, b.where, b.reason, b.range ?? '']),
+        skill.explainer.example.prompt,
+        skill.explainer.example.answer,
+        ...skill.explainer.example.working,
+      ]) {
         noDashes(line);
       }
 
@@ -278,8 +312,11 @@ describe.each(ALL_CHARTS)('the Area A explainers with the %s', (_label, chart) =
     changed.situations['open.CO'].reason = 'A different reason.';
     const before = makeA4(chart).explainer;
     const after = makeA4(changed).explainer;
-    expect(after.body.join(' ')).not.toBe(before.body.join(' '));
-    expect(after.body.join(' ')).toContain('Raise: AA.');
+    expect(after.situations!.map((s) => s.reason)).not.toEqual(before.situations!.map((s) => s.reason));
+    expect(after.situations![0]!.reason).toBe('A different reason.');
+    expect(after.situations![0]!.range).toContain('Raise: AA.');
+    expect(after.situations![0]!.grid.cells['AA']!.action).toBe('raise');
+    expect(after.situations![0]!.grid.cells['KK']!.action).not.toBe('raise');
   });
 });
 
@@ -343,14 +380,63 @@ describe('Area A with the fixture chart, whose values are known', () => {
     expect(bb.grade(pick('reraise')).correct).toBe(false);
   });
 
-  it('puts the ranges and either hands of the fixture in the explainer', () => {
-    const body = makeA3(chart).explainer.body.join(' ');
-    expect(body).toContain('Raise: JJ+, AKs.');
-    expect(body).toContain('Either is fine for TT (Raise or fold).');
-    expect(body).toContain('Raise: 99+, AQs+.');
-    expect(body).toContain('Either is fine for 88, AJs (Raise or fold).');
-    expect(body).toContain('Every other hand: Fold.');
+  it('puts the ranges and either hands of the fixture in the explainer, one block per situation', () => {
+    const blocks = makeA3(chart).explainer.situations!;
+    expect(blocks).toHaveLength(2);
+    expect(blocks[0]).toMatchObject({
+      title: 'Folded to you in the lojack',
+      where: 'LJ at 6 to 9 players',
+      reason: 'Fixture reason for the lojack.',
+      range: 'Raise: JJ+, AKs. Either is fine for TT (Raise or fold). Every other hand: Fold.',
+    });
+    expect(blocks[1]!.range).toBe('Raise: 99+, AQs+. Either is fine for 88, AJs (Raise or fold). Every other hand: Fold.');
     expect(makeA3(chart).explainer.example.sources).toEqual(['Fixture chart one, example.org']);
+  });
+
+  it('prints a range string only when the ranges of a situation add up to 60 characters or fewer', () => {
+    const raise = '22, 33, 44, 55, 66'; // 18 characters
+    const pairs = ['AA', 'KK', 'QQ', 'JJ', 'TT', '99', '88', '77'];
+    const suited = ['AKs', 'AQs', 'AJs', 'ATs', 'KQs', 'KJs', 'QJs', 'JTs'];
+    /** An either list of exactly `length` characters, made of pairs (2 characters) and suited hands (3). */
+    const eitherOf = (length: number): string => {
+      for (let twos = 0; twos <= pairs.length; twos++) {
+        for (let threes = 0; threes <= suited.length; threes++) {
+          if (twos + threes > 0 && 2 * twos + 3 * threes + 2 * (twos + threes - 1) === length) {
+            return [...pairs.slice(0, twos), ...suited.slice(0, threes)].join(', ');
+          }
+        }
+      }
+      throw new Error(`no list of ${length} characters`);
+    };
+    const withEither = (length: number) => {
+      const changed = clone(chart);
+      changed.situations['open.LJ'].ranges.raise = raise;
+      changed.situations['open.LJ'].either = [{ hands: eitherOf(length), accept: ['raise', 'fold'] }];
+      return { changed, block: makeA3(changed).explainer.situations![0]! };
+    };
+
+    const atLimit = withEither(60 - raise.length);
+    expect(rangeLength(atLimit.changed.situations['open.LJ'])).toBe(60);
+    expect(atLimit.block.range).toContain(eitherOf(42));
+    expect(atLimit.block.range).toContain(raise);
+
+    const over = withEither(61 - raise.length);
+    expect(rangeLength(over.changed.situations['open.LJ'])).toBe(61);
+    expect(over.block.range).toBeUndefined();
+    // The grid still carries every hand.
+    expect(over.block.grid.cells['22']!.action).toBe('raise');
+    expect(over.block.grid.cells['AA']!.borderline).toBe(true);
+  });
+
+  it('leaves out the range string of a very long situation but keeps its title, reason and grid', () => {
+    const changed = clone(chart);
+    changed.situations['open.LJ'].ranges.raise = Array.from({ length: 169 }, (_, i) => HAND_CLASSES[i]).join(', ');
+    changed.situations['open.LJ'].either = [];
+    const block = makeA3(changed).explainer.situations![0]!;
+    expect(block.range).toBeUndefined();
+    expect(block.title).toBe('Folded to you in the lojack');
+    expect(block.reason).toBe('Fixture reason for the lojack.');
+    expect(Object.values(block.grid.cells).every((c) => c.action === 'raise')).toBe(true);
   });
 });
 
@@ -479,9 +565,14 @@ describe.each(ALL_CHARTS)('A9: same hand, different table size, with the %s', (_
     expect(A9.draft).toBe(chart.draft);
     expect(A9.explainer.body.length).toBeGreaterThanOrEqual(3);
     expect(A9.explainer.body.length).toBeLessThanOrEqual(5);
-    const body = A9.explainer.body.join(' ');
-    expect(body).toContain(chart.situations['open.EP'].title);
-    expect(body).toContain(chart.situations['open.LJ'].title);
+    expect(A9.explainer.situations!.map((s) => s.title)).toEqual([
+      chart.situations['open.EP'].title,
+      chart.situations['open.LJ'].title,
+    ]);
+    expect(A9.explainer.situations!.map((s) => s.reason)).toEqual([
+      chart.situations['open.EP'].reason,
+      chart.situations['open.LJ'].reason,
+    ]);
     const ex = A9.explainer.example;
     if (ex.table.hole) {
       const cls = classOfCards(ex.table.hole);

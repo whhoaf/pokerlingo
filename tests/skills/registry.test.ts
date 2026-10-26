@@ -11,6 +11,7 @@ function strings(skill: (typeof ALL_SKILLS)[number]): string[] {
   return [
     skill.title,
     ...skill.explainer.body,
+    ...(skill.explainer.situations ?? []).flatMap((s) => [s.title, s.where, s.reason, s.range ?? '']),
     ex.prompt,
     ex.answer,
     ...ex.working,

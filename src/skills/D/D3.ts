@@ -36,7 +36,7 @@ export function d3Question(spec: D3Spec): Question {
     skillId: 'D3',
     seed: spec.seed,
     prompt: `${raiser} raises to ${open} chips. You decide to re-raise. Re-raise to how many chips?`,
-    table: { ring: spotRing(spot), hole, note: `${BLINDS_NOTE}. ${spot.players} players` },
+    table: { ring: spotRing({ ...spot, raiseTo: open }), hole, note: `${BLINDS_NOTE}. ${spot.players} players` },
     input: { kind: 'number', unit: 'chips' },
     grade(answer: Answer): GradeResult {
       const { correct } = chipsIn(answer, span);

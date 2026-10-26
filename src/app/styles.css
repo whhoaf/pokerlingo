@@ -326,9 +326,15 @@ a {
   transform: translateY(6px);
   box-shadow: 0 0 0 var(--sh);
 }
+/* Not ready yet: a solid muted panel with its hard shadow and plain light text. Nothing shows through. */
 .btn:disabled {
-  opacity: 0.5;
   cursor: default;
+  color: var(--light);
+  background: var(--dark);
+  box-shadow:
+    inset 0 0 0 2px var(--dark-2),
+    0 6px 0 var(--sheet);
+  text-shadow: none;
 }
 .btn--big {
   width: 100%;
@@ -573,9 +579,15 @@ a {
 .chip--bet .chip-label {
   color: var(--text);
 }
+/* Gold on a solid dark pill, so the contrast (7.7 to 1) does not depend on the swirl behind the felt. */
 .felt-note {
+  align-self: center;
+  max-width: 100%;
+  padding: 4px 12px 6px;
+  border-radius: var(--rad);
   text-align: center;
   color: var(--gold);
+  background: var(--sheet);
 }
 
 .card-row {
@@ -692,6 +704,32 @@ a {
   background: rgba(0, 0, 0, 0.22);
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.06);
 }
+.ring-seats {
+  position: absolute;
+  inset: 0;
+}
+/* Your cards lie on the table, behind the seats. */
+.ring-hand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 44%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.ring-hand .card-row--hand {
+  padding: 0;
+}
+.ring-table .felt-note {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: 86%;
+}
 .seat {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -699,10 +737,12 @@ a {
 .seat-pill {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   min-width: 62px;
-  height: 34px;
+  min-height: 34px;
   padding: 0 6px;
   border-radius: 12px;
   background: var(--dark);
@@ -723,10 +763,12 @@ a {
   color: var(--text);
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
 }
+/* The dealer button sits on the right edge of the seat, half outside, level with the name. */
 .seat-button {
   position: absolute;
-  right: -12px;
-  top: -14px;
+  right: -15px;
+  top: 50%;
+  margin-top: -13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -737,17 +779,21 @@ a {
   color: var(--suit-black);
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
 }
+.seat--low .seat-button {
+  top: auto;
+  margin-top: 0;
+  bottom: -12px;
+}
+/* What the seat did, inside its pill: a small dark label, so it reads on blue, red and gold alike. */
 .seat-tag {
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  transform: translateX(-50%);
-  margin-top: 5px;
+  padding: 2px 7px 3px;
+  border-radius: 6px;
   font-family: var(--sans);
   font-size: 16px;
-  line-height: 1;
+  line-height: 1.1;
   white-space: nowrap;
   color: var(--text);
+  background: var(--sheet);
 }
 .seat--you .seat-pill {
   background: var(--gold);
@@ -771,8 +817,14 @@ a {
   background: var(--purple);
   border-color: var(--purple-l);
 }
-.seat--fold {
-  opacity: 0.45;
+/* A seat that folded: darker, with light text. Solid, so cards on the table never show through it. */
+.seat--fold .seat-pill {
+  background: var(--sheet);
+  border-color: var(--dark);
+}
+.seat--fold .seat-name {
+  color: var(--light);
+  text-shadow: none;
 }
 .seat--blank .seat-pill {
   min-width: 36px;
@@ -851,6 +903,22 @@ a {
   padding: 0;
   list-style: none;
 }
+/* On the feedback sheet height is short: a smaller grid with the key beside it. */
+.chart--side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+.chart--side .rg {
+  max-width: 256px;
+}
+.chart--side .rg-key {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 8px;
+  max-width: 104px;
+}
 .rg-key li {
   display: flex;
   align-items: center;
@@ -924,7 +992,8 @@ a {
   flex-direction: column;
   gap: 14px;
 }
-.choices--cards {
+.choices--cards,
+.choices--pairs {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
@@ -1039,7 +1108,7 @@ a {
   z-index: 15;
   width: 100%;
   max-width: 480px;
-  max-height: 82dvh;
+  max-height: 90dvh;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -1137,6 +1206,22 @@ a {
 }
 .example .felt {
   background: rgba(0, 0, 0, 0.3);
+}
+/* One block per chart situation: title, where it applies, reason, the range if it is short, then the grid. */
+.situation > .small {
+  margin-top: 4px;
+  color: var(--light);
+}
+.situation > p:not(.small) {
+  margin-top: 8px;
+}
+.situation .situation-range {
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
+.situation .chart {
+  margin-top: 12px;
 }
 .panel--good .ansline {
   margin-top: 4px;

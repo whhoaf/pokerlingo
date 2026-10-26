@@ -5,7 +5,7 @@ import { Table } from './Table';
 
 /** One screen of teaching: the explainer, a worked example and further reading. */
 export function Explainer({ skill, withReading = true }: { skill: SkillDef; withReading?: boolean }) {
-  const { body, example } = skill.explainer;
+  const { body, situations, example } = skill.explainer;
   return (
     <div class="stack explainer">
       {skill.draft && <DraftNote />}
@@ -14,9 +14,18 @@ export function Explainer({ skill, withReading = true }: { skill: SkillDef; with
           <p key={p}>{p}</p>
         ))}
       </div>
+      {situations?.map((s) => (
+        <section key={s.title} class="panel situation">
+          <div class="lbl">{s.title}</div>
+          <p class="small situation-where">{s.where}</p>
+          <p>{s.reason}</p>
+          {s.range && <p class="situation-range">{s.range}</p>}
+          <RangeGrid grid={s.grid} showTitle={false} />
+        </section>
+      ))}
       <div class="stack example">
         <div class="lbl">Worked example</div>
-        <Table table={example.table} />
+        <Table table={example.table} reveal={example.answer} />
         <p class="panel prompt">{example.prompt}</p>
         <div class="panel panel--good">
           <div class="lbl">Answer</div>

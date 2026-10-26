@@ -19,11 +19,21 @@ export function gridLabel(grid: RangeGridView): string {
  * The chart for one situation as a 13 by 13 grid. Pairs sit on the diagonal, suited hands above it and offsuit hands
  * below. One solid colour per action, a dot in the corner for borderline hands, your hand outlined.
  */
-export function RangeGrid({ grid }: { grid: RangeGridView }) {
+export function RangeGrid({
+  grid,
+  showTitle = true,
+  compact = false,
+}: {
+  grid: RangeGridView;
+  /** The situation's title above the grid. Off where the title is already on screen. */
+  showTitle?: boolean;
+  /** Smaller grid with the key beside it, for the feedback sheet where height is short. */
+  compact?: boolean;
+}) {
   const anyBorderline = Object.values(grid.cells).some((c) => c.borderline);
   return (
-    <div class="chart">
-      <div class="lbl">{grid.title}</div>
+    <div class={compact ? 'chart chart--side' : 'chart'}>
+      {showTitle && <div class="lbl">{grid.title}</div>}
       <div class="rg" role="img" aria-label={gridLabel(grid)}>
         <span class="rg-axis" aria-hidden="true" />
         {AXIS.map((r) => (

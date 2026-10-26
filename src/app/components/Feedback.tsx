@@ -55,7 +55,7 @@ export function Feedback({ result, skillTitle, note, nextLabel = 'Next', onNext 
           <div class="ansline">{result.correctLabel}</div>
         </div>
         <p class="why">{result.reason}</p>
-        {result.rangeGrid && <RangeGrid grid={result.rangeGrid} />}
+        {result.rangeGrid && <RangeGrid grid={result.rangeGrid} showTitle={false} compact />}
         {result.working && result.working.length > 0 && (
           <ul class="work">
             {result.working.map((line) => (

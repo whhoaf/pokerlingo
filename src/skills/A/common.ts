@@ -2,11 +2,11 @@
 
 import { lookupFor, type Lookup, type SpotShape } from '../../content/chart';
 import { sourceLines } from '../../content';
-import { ACTION_LABELS, type Action, type HouseChart, type SituationId } from '../../content/types';
+import { ACTION_LABELS, type Action, type HouseChart, type Situation, type SituationId } from '../../content/types';
 import { classOfCards, HAND_CLASSES, kindOf, nearEdge, pickByCombos, STRENGTH_ORDER } from '../../engine/ranges';
 import type { Rng } from '../../engine/rng';
 import { seatNames, seatsBefore } from '../../engine/seats';
-import type { Card, RangeGridView, RingSeat, SeatRing } from '../../engine/types';
+import type { Card, RangeGridView, RingSeat, SeatRing, SituationBlock } from '../../engine/types';
 
 export const AREA_A_READING = [
   { label: 'PokerCoaching preflop charts', url: 'https://pokercoaching.com/preflop-charts' },
@@ -102,6 +102,8 @@ export interface SpotSeats {
   hero: string;
   limpers: string[];
   raiser?: string;
+  /** The size of the raise in chips, when the question states one. Shown on the raiser's seat. */
+  raiseTo?: number;
 }
 
 /** Pick one place where the situation comes up. */
@@ -129,7 +131,8 @@ export function spotRing(spot: SpotSeats): SeatRing {
       seat.tag = 'You';
     } else if (name === spot.raiser) {
       seat.role = 'raise';
-      seat.tag = 'Raise';
+      // The red seat is the raiser. With a size the label is the size, which keeps the seat narrow.
+      seat.tag = spot.raiseTo === undefined ? 'Raise' : `${spot.raiseTo} chips`;
     } else if (spot.limpers.includes(name)) {
       seat.role = 'limp';
       seat.tag = 'Limp';
@@ -196,13 +199,23 @@ function playersText(range: readonly [number, number]): string {
   return range[0] === range[1] ? `${range[0]} players` : `${range[0]} to ${range[1]} players`;
 }
 
+/** A range string is printed in an explainer only when all the ranges of its situation add up to about this many characters. */
+export const SHORT_RANGE_CHARS = 60;
+
+/** The characters in every range string of a situation: its action ranges and its either hands. */
+export function rangeLength(s: Situation): number {
+  let n = 0;
+  for (const action of s.choices) n += (s.ranges[action] ?? '').trim().length;
+  for (const e of s.either ?? []) n += e.hands.trim().length;
+  return n;
+}
+
 /**
- * One situation as sentences, with every range read from the file:
- * 'Folded to you in an early seat (UTG, UTG+1, UTG+2 at 7 to 9 players). Raise: 77+. Either is fine: 66 (Raise or fold). Every other hand: Fold.'
+ * One situation's ranges as sentences, read from the file:
+ * 'Raise: 77+. Either is fine for 66 (Raise or fold). Every other hand: Fold.'
  */
-export function describeSituation(chart: HouseChart, id: SituationId): string {
-  const s = chart.situations[id];
-  const parts = [`${s.title} (${s.seats.join(', ')} at ${playersText(s.players)}).`];
+export function rangeText(s: Situation): string {
+  const parts: string[] = [];
   for (const action of s.choices) {
     const range = s.ranges[action];
     if (range !== undefined && range.trim() !== '') parts.push(`${ACTION_LABELS[action]}: ${range}.`);
@@ -212,8 +225,24 @@ export function describeSituation(chart: HouseChart, id: SituationId): string {
   return parts.join(' ');
 }
 
+/**
+ * One situation for an explainer: its title, where it applies, its reason and its 13 by 13 chart. The range string
+ * is added only when it is short. Long ones (a small blind facing limpers runs to hundreds of characters) are left
+ * to the grid.
+ */
+export function situationBlock(chart: HouseChart, id: SituationId): SituationBlock {
+  const s = chart.situations[id];
+  return {
+    title: s.title,
+    where: `${s.seats.join(', ')} at ${playersText(s.players)}`,
+    reason: s.reason,
+    ...(rangeLength(s) <= SHORT_RANGE_CHARS ? { range: rangeText(s) } : {}),
+    grid: buildRangeGrid(chart, id),
+  };
+}
+
 export const NOTATION_PARAGRAPH =
   'Hands are written by class. AKs is ace king suited, AKo is ace king offsuit, and TT is a pair. 77+ means 77 and every higher pair. ATs+ means ATs, AJs, AQs and AKs.';
 
 export const GRID_PARAGRAPH =
-  'After you answer, the chart appears as a 13 by 13 grid with your hand outlined. Pairs run down the middle, suited hands sit above it and offsuit hands below. A dot in a corner marks a borderline hand.';
+  'Each chart is a 13 by 13 grid. Pairs run down the middle, suited hands sit above it and offsuit hands below. A dot in a corner marks a borderline hand. After you answer, the chart appears again with your hand outlined.';

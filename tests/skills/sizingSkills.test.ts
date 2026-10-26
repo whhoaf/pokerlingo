@@ -117,6 +117,8 @@ describe.each(ALL_SIZING)('D3 with the %s', (_label, rules) => {
       const open = Number(/raises to (\d+) chips/.exec(q.prompt)![1]);
       opens.add(open);
       expect(q.prompt.startsWith(`${raiser} raises to ${open} chips.`)).toBe(true);
+      // The picture states the same size on the raiser's seat.
+      expect(ring.seats.find((s) => s.role === 'raise')!.tag).toBe(`${open} chips`);
       const inPosition = hero === 'BTN' && raiser === 'CO';
       const outOfPosition = (hero === 'SB' || hero === 'BB') && raiser === 'BTN';
       expect(inPosition || outOfPosition, `${hero} against ${raiser}`).toBe(true);
