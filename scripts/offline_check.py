@@ -154,6 +154,7 @@ def main() -> None:
             area = page.locator(".hud .tag b").inner_text().strip()
             if area in ("Seats", "Sizing") and area not in seen:
                 seen.add(area)
+                page.wait_for_timeout(1200)  # the cards are dealt in over about a second
                 font_report(page, f"offline {area} question")
                 page.screenshot(path=str(OUT / f"41-offline-{area.lower()}-question.png"))
             if seen == {"Seats", "Sizing"}:

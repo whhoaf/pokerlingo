@@ -29,8 +29,15 @@ export function Table({ table, reveal }: { table: TableView; reveal?: string }) 
   const next = () => dealt++ * DEAL_GAP;
   // With a seat picture and no board, your cards sit on the oval of the table. That saves a row of height on a phone.
   const handInRing = !!ring && hole.length > 0 && board.length === 0 && villain.length === 0;
+  // On the table the cards are board size, so they clear the seats round the edge.
   const handCards = hole.map((c, i) => (
-    <PlayingCard key={c} card={c} size="hand" tilt={hole.length === 2 ? (i === 0 ? -5 : 5) : 0} delay={next()} />
+    <PlayingCard
+      key={c}
+      card={c}
+      size={handInRing ? 'board' : 'hand'}
+      tilt={hole.length === 2 ? (i === 0 ? -5 : 5) : 0}
+      delay={next()}
+    />
   ));
   return (
     <div class="felt" aria-label="Table">

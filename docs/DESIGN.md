@@ -55,7 +55,10 @@ Two faces, never mixed inside one line.
 - **Felt** (the board area): `rgba(0,0,0,.28)`, 12 px radius, inner 2 px line at 6% white.
 - **Cards:** `--card` face, 2 px `--card-edge` border, 9 px radius, hard shadow `0 6px 0 rgba(0,0,0,.38)`. Rank top left in pixel 36 px; small suit under it on large cards; big suit bottom right. Suits are the 9 by 9 pixel drawings from the sketch, as inline SVG with `shape-rendering: crispEdges`. Board cards 62 by 86 px, your cards 84 by 116 px, slightly fanned (minus 5 and plus 5 degrees). Mini cards in choices about 44 by 60 px.
 - **Buttons:** flat colour, 12 px radius, white pixel text with a `0 3px 0 rgba(0,0,0,.25)` text shadow, hard shadow `0 6px 0` in the darker shade. When pressed the button moves down 6 px onto its shadow (60 ms). Big buttons fill the width.
-- **Feedback sheet:** slides up from the bottom, opaque `--sheet`, 2 px `--dark-2` top border, hard shadow upwards, rounded top corners.
+- **Disabled button** (Check before an answer is typed): solid `--dark` panel, 2 px `--dark-2` edge, hard shadow in `--sheet`, `--light` pixel text (6.1 to 1), no opacity and no text shadow. Nothing shows through.
+- **Note on the felt:** gold text on a solid `--sheet` pill (7.7 to 1), so the contrast does not depend on the swirl behind.
+- **Seat picture** (Areas A and D): seats round an oval, 236 px tall. Your two cards lie on the oval at board size, behind the seats, when there is no board. What a seat did ("You", "Limp", "Raise" or the raise size in chips) is a small dark label inside its pill. The dealer button sits on the right edge of the pill, or low on seats in the lower part. Folded seats are a darker solid pill with light text.
+- **Feedback sheet:** slides up from the bottom, opaque `--sheet`, 2 px `--dark-2` top border, hard shadow upwards, rounded top corners. At most 90% of the screen height. In Area A the chart is smaller with its key beside it, so the result, the answer, the reason and your hand on the chart show without scrolling on 390 by 844. The working and sources scroll below. Next stays pinned.
 
 ## Background
 
