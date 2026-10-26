@@ -192,6 +192,8 @@ ADVICE_DRAFT = {
 # Skills with a seat picture, and those that show the chart grid after an answer.
 RING_SKILLS = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "D2", "D3"]
 GRID_SKILLS = ["A2", "A3", "A4", "A5", "A6", "A7", "A8"]
+# How many chart situations each of those skills explains.
+SITUATION_COUNT = {"A2": 1, "A3": 2, "A4": 2, "A5": 1, "A6": 4, "A7": 2, "A8": 1}
 
 # Makes every random seed in the app repeatable, so a run gives the same screenshots.
 FIXED_SEEDS_JS = """
@@ -367,8 +369,22 @@ def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
     check_draft_note(page, skill_id, f"{skill_id} explainer")
     if skill_id in RING_SKILLS and page.locator(".example .ring").count() != 1:
         problem(f"{skill_id}: the worked example has no table picture")
-    if skill_id in GRID_SKILLS and page.locator(".explainer .rg-cell").count() != 169:
-        problem(f"{skill_id}: the worked example should show the 13 by 13 chart")
+    if skill_id in GRID_SKILLS:
+        # One block per situation, each with its own chart and no outlined hand, then the worked example's chart.
+        blocks = page.locator(".explainer .situation").count()
+        if blocks != SITUATION_COUNT[skill_id]:
+            problem(f"{skill_id}: the explainer should have {SITUATION_COUNT[skill_id]} situation blocks, found {blocks}")
+        if page.locator(".explainer .situation .rg-cell").count() != 169 * blocks:
+            problem(f"{skill_id}: every situation block should show the 13 by 13 chart")
+        if page.locator(".explainer .situation .rg-cell--yours").count() != 0:
+            problem(f"{skill_id}: a situation block outlines a hand")
+        if page.locator(".explainer .situation .rg-key").count() != blocks:
+            problem(f"{skill_id}: every situation block should have its key")
+        if page.locator(".explainer .example .rg-cell--yours").count() != 1:
+            problem(f"{skill_id}: the worked example should outline one hand")
+        for text in page.locator(".explainer .situation-range").all_inner_texts():
+            if len(text) > 400:
+                problem(f"{skill_id}: a printed range string looks too long")
     shot(page, f"{prefix}-{skill_id}-skill-detail")
     click(page, "Practise")
     page.locator(".hud-info", has_text=skill_id).wait_for()
@@ -401,6 +417,14 @@ def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
         if skill_id in ("D2", "D3", "D5") and outcome != ("correct" if attempt % 2 == 0 else "wrong"):
             problem(f"{skill_id}: the answer worked out from the rules file was graded {outcome} on attempt {attempt}")
         check_draft_note(page, skill_id, f"{skill_id} feedback")
+        if skill_id == "A1":
+            focus = page.locator(".ring .seat--focus .seat-name").inner_text().strip()
+            if focus != page.locator(".ansline").inner_text().strip():
+                problem(f"A1 feedback: the highlighted seat shows '{focus}', not the answer")
+        if skill_id == "D3":
+            tag = page.locator(".ring .seat--raise .seat-tag").inner_text().strip()
+            if tag != re.search(r"raises to (\d+) chips", prompt).group(1) + " chips":
+                problem(f"D3: the raiser's seat shows '{tag}', but the prompt says: {prompt}")
         if skill_id in GRID_SKILLS:
             if page.locator(".sheet .rg-cell").count() != 169 or page.locator(".sheet .rg-cell--yours").count() != 1:
                 problem(f"{skill_id}: feedback should show the 13 by 13 chart with your hand outlined")
@@ -469,6 +493,12 @@ def main() -> None:
         click(page, "Start a 10-minute session")
         wait_tag(page, "New skill", "1 of 2")
         expect_tone(page, "blue", "new skill question")
+        # The Check button before an answer is a solid panel, not see-through.
+        disabled = page.evaluate(
+            "() => { const s = getComputedStyle(document.querySelector('form .btn')); return [s.opacity, s.backgroundColor]; }"
+        )
+        if disabled[0] != "1" or not disabled[1].startswith("rgb(") or page.locator("form .btn").is_enabled():
+            problem(f"the disabled Check button should be opaque and disabled, got {disabled}")
         shot(page, "03-probe-question")
         page.locator("input[type=text]").fill("9")
         shot(page, "04-probe-number-filled")
