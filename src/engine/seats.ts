@@ -45,9 +45,20 @@ export function chartSeat(seat: string, players: number): ChartSeat {
   return seat as ChartSeat;
 }
 
-/** True when a chart's seat list names this seat, either directly or through the chart row it uses. */
+/** The chart row a listed seat name stands for. UTG, UTG+1 and UTG+2 are all the early row. */
+function rowOf(listed: string): string {
+  return listed.startsWith('UTG') ? 'EP' : listed;
+}
+
+/**
+ * True when a chart's seat list names this seat. A row name (LJ, HJ, CO, BTN, SB, BB) covers every seat that uses
+ * that row, so LJ also covers the first seat at 6 players. An early seat (UTG, UTG+1, UTG+2) covers only itself,
+ * and only where it plays the early row: at 6 players the first seat is not an early seat.
+ */
 export function seatMatches(listed: string, seat: string, players: number): boolean {
-  return listed === seat || listed === chartSeat(seat, players);
+  const row = chartSeat(seat, players);
+  if (row !== rowOf(listed)) return false;
+  return row !== 'EP' || listed === seat;
 }
 
 export function isBlind(seat: string): boolean {

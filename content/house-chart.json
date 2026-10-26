@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "draft": true,
+  "sources": {
+    "TBD": { "title": "Placeholder, to be replaced", "site": "", "url": "" }
+  },
+  "situations": {
+    "open.EP": {
+      "title": "Folded to you in an early seat",
+      "seats": ["UTG", "UTG+1", "UTG+2"],
+      "players": [7, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "77+, ATs+, KQs, AQo+" },
+      "either": [{ "hands": "66, A9s", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: early seats act first, so only strong hands open.",
+      "sources": ["TBD"]
+    },
+    "open.LJ": {
+      "title": "Folded to you in the lojack",
+      "seats": ["LJ"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "66+, A9s+, KTs+, QTs+, JTs, AJo+, KQo" },
+      "either": [{ "hands": "55, A8s, T9s", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: a few more hands open from the lojack.",
+      "sources": ["TBD"]
+    },
+    "open.HJ": {
+      "title": "Folded to you in the hijack",
+      "seats": ["HJ"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "55+, A7s+, A5s, K9s+, Q9s+, J9s+, T9s, 98s, ATo+, KJo+" },
+      "either": [{ "hands": "44, 87s, QJo", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: the hijack opens a wider range.",
+      "sources": ["TBD"]
+    },
+    "open.CO": {
+      "title": "Folded to you in the cutoff",
+      "seats": ["CO"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "44+, A2s+, K8s+, Q9s+, J9s+, T9s, 98s, 87s, A9o+, KTo+, QJo" },
+      "either": [{ "hands": "33, 76s, 65s, QTo", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: only the button and the blinds are left to act.",
+      "sources": ["TBD"]
+    },
+    "open.BTN": {
+      "title": "Folded to you on the button",
+      "seats": ["BTN"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "22+, A2s+, K5s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 76s, 65s, A7o+, K9o+, QTo+, JTo" },
+      "either": [{ "hands": "54s, A5o, K8o", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: the button acts last after the flop, so it opens the most hands.",
+      "sources": ["TBD"]
+    },
+    "open.SB": {
+      "title": "Small blind, folded to you",
+      "seats": ["SB"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "33+, A2s+, K7s+, Q9s+, J9s+, T9s, 98s, 87s, A8o+, KTo+, QJo" },
+      "either": [{ "hands": "22, 76s, A7o", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: only the big blind is left to beat, but you act first after the flop.",
+      "sources": ["TBD"]
+    },
+    "limpers.early": {
+      "title": "Facing limpers from an early or middle seat",
+      "seats": ["UTG+1", "UTG+2", "LJ", "HJ"],
+      "players": [6, 9],
+      "limpers": [1, 3],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "TT+, AJs+, AQo+" },
+      "either": [{ "hands": "99, ATs, KQs", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: limpers make the pot bigger, so raise your strong hands.",
+      "sources": ["TBD"]
+    },
+    "limpers.late": {
+      "title": "Facing limpers from the cutoff or button",
+      "seats": ["CO", "BTN"],
+      "players": [6, 9],
+      "limpers": [1, 3],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "77+, A9s+, KTs+, QTs+, JTs, T9s, 98s, ATo+, KQo" },
+      "either": [{ "hands": "66, 87s, KJo", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: in late seats you can raise more hands over limpers.",
+      "sources": ["TBD"]
+    },
+    "limpers.SB": {
+      "title": "Small blind facing limpers",
+      "seats": ["SB"],
+      "players": [6, 9],
+      "limpers": [1, 3],
+      "choices": ["raise", "call", "fold"],
+      "ranges": {
+        "raise": "TT+, AJs+, AQo+, KQs",
+        "call": "22-99, A2s-ATs, K9s-KJs, QTs+, JTs, T9s, 98s, 87s, ATo-AJo, KQo, KJo"
+      },
+      "either": [{ "hands": "76s, QJo", "accept": ["call", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: you already have a blind in, so some hands can just call.",
+      "sources": ["TBD"]
+    },
+    "limpers.BB": {
+      "title": "Big blind facing limpers",
+      "seats": ["BB"],
+      "players": [6, 9],
+      "limpers": [1, 3],
+      "choices": ["raise", "check"],
+      "ranges": { "raise": "JJ+, AQs+, AKo" },
+      "either": [{ "hands": "TT, AJs", "accept": ["raise", "check"] }],
+      "default": "check",
+      "reason": "Placeholder: you can see the flop for free, so raise only your best hands.",
+      "sources": ["TBD"]
+    },
+    "raise.vsEarly": {
+      "title": "Facing a raise from an early seat",
+      "seats": ["HJ", "CO", "BTN", "SB"],
+      "players": [6, 9],
+      "raiser": ["UTG", "UTG+1", "UTG+2", "LJ"],
+      "choices": ["reraise", "call", "fold"],
+      "ranges": { "reraise": "QQ+, AKs, AKo", "call": "88-JJ, AQs, AJs, KQs, AQo" },
+      "either": [{ "hands": "77, ATs", "accept": ["call", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: an early raiser has a strong hand, so you need one too.",
+      "sources": ["TBD"]
+    },
+    "raise.vsLate": {
+      "title": "Facing a raise from a late seat",
+      "seats": ["BTN", "SB"],
+      "players": [6, 9],
+      "raiser": ["HJ", "CO", "BTN"],
+      "choices": ["reraise", "call", "fold"],
+      "ranges": { "reraise": "TT+, AQs+, AKo", "call": "66-99, ATs-AJs, KQs, QJs, JTs, T9s, AQo" },
+      "either": [{ "hands": "55, 98s", "accept": ["call", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: a late raiser opens many hands, so you can play more of yours.",
+      "sources": ["TBD"]
+    },
+    "bb.vsRaise": {
+      "title": "Big blind facing a raise",
+      "seats": ["BB"],
+      "players": [6, 9],
+      "choices": ["reraise", "call", "fold"],
+      "ranges": {
+        "reraise": "QQ+, AKs, AKo",
+        "call": "22-JJ, A2s-AQs, K9s+, Q9s+, J9s+, T9s, 98s, 87s, 76s, 65s, ATo-AQo, KJo+, QJo"
+      },
+      "either": [{ "hands": "T8s, 54s", "accept": ["call", "fold"] }],
+      "default": "fold",
+      "reason": "Placeholder: you already have a blind in, so you can call with more hands.",
+      "sources": ["TBD"]
+    }
+  }
+}

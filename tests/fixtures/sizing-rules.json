@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "draft": false,
+  "sources": {
+    "S1": { "title": "Fixture sizing one", "site": "example.org", "url": "https://example.org/sizing-one" },
+    "S2": { "title": "Fixture sizing two", "site": "example.net", "url": "https://example.net/sizing-two" }
+  },
+  "rules": {
+    "D2": {
+      "title": "Preflop raise size",
+      "unit": "bb",
+      "base": { "min": 3, "max": 4 },
+      "perLimper": 1,
+      "reason": "Fixture reason for D2.",
+      "sources": ["S1"]
+    },
+    "D3": {
+      "title": "Re-raise size",
+      "unit": "x",
+      "inPosition": { "min": 3, "max": 3 },
+      "outOfPosition": { "min": 4, "max": 5 },
+      "reason": "Fixture reason for D3.",
+      "sources": ["S1", "S2"]
+    },
+    "D4": {
+      "title": "Continuation bet size",
+      "unit": "pot",
+      "dry": { "min": 0.25, "max": 0.34 },
+      "wet": { "min": 0.6, "max": 0.8 },
+      "reason": "Fixture reason for D4.",
+      "sources": ["S2"]
+    },
+    "D5": {
+      "title": "Value bet against players who call too much",
+      "unit": "pot",
+      "range": { "min": 0.5, "max": 0.75 },
+      "reason": "Fixture reason for D5.",
+      "sources": ["S1"]
+    }
+  }
+}

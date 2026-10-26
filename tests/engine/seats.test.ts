@@ -86,9 +86,11 @@ describe('chart rows', () => {
 
   it('matches a listed seat by name or by chart row', () => {
     expect(seatMatches('LJ', 'UTG', 6)).toBe(true);
-    expect(seatMatches('UTG', 'UTG', 6)).toBe(true);
+    expect(seatMatches('UTG', 'UTG', 6)).toBe(false); // at 6 players the first seat is not an early seat
+    expect(seatMatches('UTG', 'UTG', 7)).toBe(true);
+    expect(seatMatches('UTG+1', 'UTG', 8)).toBe(false);
+    expect(seatMatches('UTG+1', 'UTG+1', 8)).toBe(true);
     expect(seatMatches('LJ', 'UTG', 7)).toBe(false);
-    expect(seatMatches('EP', 'UTG+1', 9)).toBe(true);
     expect(seatMatches('HJ', 'CO', 9)).toBe(false);
   });
 });

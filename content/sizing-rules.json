@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "draft": true,
+  "sources": {
+    "TBD": { "title": "Placeholder, to be replaced", "site": "", "url": "" }
+  },
+  "rules": {
+    "D2": {
+      "title": "Preflop raise size",
+      "unit": "bb",
+      "base": { "min": 4, "max": 5 },
+      "perLimper": 1,
+      "reason": "Placeholder: a bigger raise makes the limpers pay to see a flop.",
+      "sources": ["TBD"]
+    },
+    "D3": {
+      "title": "Re-raise size",
+      "unit": "x",
+      "inPosition": { "min": 3, "max": 3.5 },
+      "outOfPosition": { "min": 4, "max": 4.5 },
+      "reason": "Placeholder: out of position, make the re-raise bigger.",
+      "sources": ["TBD"]
+    },
+    "D4": {
+      "title": "Continuation bet size",
+      "unit": "pot",
+      "dry": { "min": 0.25, "max": 0.5 },
+      "wet": { "min": 0.5, "max": 0.75 },
+      "reason": "Placeholder: bet less on a dry flop and more on a wet one.",
+      "sources": ["TBD"]
+    },
+    "D5": {
+      "title": "Value bet against players who call too much",
+      "unit": "pot",
+      "range": { "min": 0.66, "max": 1 },
+      "reason": "Placeholder: bet big when the other player calls too often.",
+      "sources": ["TBD"]
+    }
+  }
+}

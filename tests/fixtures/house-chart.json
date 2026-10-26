@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "draft": false,
+  "sources": {
+    "S1": { "title": "Fixture chart one", "site": "example.org", "url": "https://example.org/chart-one" },
+    "S2": { "title": "Fixture chart two", "site": "example.net", "url": "https://example.net/chart-two" }
+  },
+  "situations": {
+    "open.EP": {
+      "title": "Folded to you in an early seat",
+      "seats": ["UTG", "UTG+1", "UTG+2"],
+      "players": [7, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "KK+" },
+      "either": [{ "hands": "QQ", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Fixture reason for early seats.",
+      "sources": ["S1"]
+    },
+    "open.LJ": {
+      "title": "Folded to you in the lojack",
+      "seats": ["LJ"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "JJ+, AKs" },
+      "either": [{ "hands": "TT", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Fixture reason for the lojack.",
+      "sources": ["S1"]
+    },
+    "open.HJ": {
+      "title": "Folded to you in the hijack",
+      "seats": ["HJ"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "99+, AQs+" },
+      "either": [{ "hands": "88, AJs", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Fixture reason for the hijack.",
+      "sources": ["S1", "S2"]
+    },
+    "open.CO": {
+      "title": "Folded to you in the cutoff",
+      "seats": ["CO"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "77+, AJs+" },
+      "either": [{ "hands": "66", "accept": ["raise", "fold"] }],
+      "default": "fold",
+      "reason": "Fixture reason for the cutoff.",
+      "sources": ["S1"]
+    },
+    "open.BTN": {
+      "title": "Folded to you on the button",
+      "seats": ["BTN"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "22+, A2s+" },
+      "default": "fold",
+      "reason": "Fixture reason for the button.",
+      "sources": ["S1"]
+    },
+    "open.SB": {
+      "title": "Small blind, folded to you",
+      "seats": ["SB"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "55+" },
+      "default": "fold",
+      "reason": "Fixture reason for the small blind.",
+      "sources": ["S1"]
+    },
+    "limpers.early": {
+      "title": "Facing limpers early",
+      "seats": ["LJ", "HJ"],
+      "players": [7, 9],
+      "limpers": [1, 2],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "TT+" },
+      "default": "fold",
+      "reason": "Fixture reason for limpers early.",
+      "sources": ["S1"]
+    },
+    "limpers.late": {
+      "title": "Facing limpers late",
+      "seats": ["CO", "BTN"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "77+" },
+      "default": "fold",
+      "reason": "Fixture reason for limpers late.",
+      "sources": ["S1"]
+    },
+    "limpers.SB": {
+      "title": "Small blind facing limpers",
+      "seats": ["SB"],
+      "players": [6, 9],
+      "choices": ["raise", "call", "fold"],
+      "ranges": { "raise": "QQ+", "call": "22-JJ" },
+      "default": "fold",
+      "reason": "Fixture reason for the small blind facing limpers.",
+      "sources": ["S1"]
+    },
+    "limpers.BB": {
+      "title": "Big blind facing limpers",
+      "seats": ["BB"],
+      "players": [6, 9],
+      "choices": ["raise", "check"],
+      "ranges": { "raise": "JJ+" },
+      "default": "check",
+      "reason": "Fixture reason for the big blind facing limpers.",
+      "sources": ["S1"]
+    },
+    "raise.vsEarly": {
+      "title": "Facing an early raise",
+      "seats": ["CO", "BTN"],
+      "players": [6, 9],
+      "raiser": ["UTG", "UTG+1", "UTG+2", "LJ"],
+      "choices": ["reraise", "call", "fold"],
+      "ranges": { "reraise": "KK+", "call": "TT-QQ" },
+      "default": "fold",
+      "reason": "Fixture reason for an early raise.",
+      "sources": ["S1"]
+    },
+    "raise.vsLate": {
+      "title": "Facing a late raise",
+      "seats": ["BTN", "SB"],
+      "players": [6, 9],
+      "raiser": ["HJ", "CO", "BTN"],
+      "choices": ["reraise", "call", "fold"],
+      "ranges": { "reraise": "QQ+", "call": "88-JJ" },
+      "default": "fold",
+      "reason": "Fixture reason for a late raise.",
+      "sources": ["S1"]
+    },
+    "bb.vsRaise": {
+      "title": "Big blind facing a raise",
+      "seats": ["BB"],
+      "players": [6, 9],
+      "choices": ["reraise", "call", "fold"],
+      "ranges": { "reraise": "AA", "call": "22-KK" },
+      "either": [{ "hands": "A5s", "accept": ["call", "fold"] }],
+      "default": "fold",
+      "reason": "Fixture reason for the big blind.",
+      "sources": ["S2"]
+    }
+  }
+}

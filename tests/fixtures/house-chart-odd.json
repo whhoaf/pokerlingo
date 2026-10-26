@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "draft": true,
+  "sources": {
+    "TBD": { "title": "Placeholder, to be replaced", "site": "", "url": "" },
+    "S9": { "title": "Odd fixture", "site": "", "url": "https://example.org/odd" }
+  },
+  "situations": {
+    "open.EP": {
+      "title": "Everything folds",
+      "seats": ["UTG+1"],
+      "players": [8, 8],
+      "choices": ["fold", "raise"],
+      "ranges": {},
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "open.LJ": {
+      "title": "Everything is borderline",
+      "seats": ["LJ", "UTG"],
+      "players": [6, 7],
+      "choices": ["raise", "call", "fold"],
+      "ranges": { "raise": "AA" },
+      "either": [{ "hands": "22+", "accept": ["call", "fold", "raise"] }],
+      "default": "call",
+      "reason": "Odd reason.",
+      "sources": ["S9"]
+    },
+    "open.HJ": {
+      "title": "Hijack",
+      "seats": ["HJ"],
+      "players": [9, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "A2s+, K2s+, Q2s+" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "open.CO": {
+      "title": "Cutoff",
+      "seats": ["CO"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "22+" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "open.BTN": {
+      "title": "Button",
+      "seats": ["BTN"],
+      "players": [6, 9],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "22+, A2s+, K2s+, Q2s+, J2s+, T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, A2o+, K2o+" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "open.SB": {
+      "title": "Small blind",
+      "seats": ["SB"],
+      "players": [6, 9],
+      "choices": ["raise", "call", "fold"],
+      "ranges": { "raise": "TT+", "call": "22-99" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "limpers.early": {
+      "title": "Exactly two limpers",
+      "seats": ["HJ"],
+      "players": [9, 9],
+      "limpers": [2, 2],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "AA" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "limpers.late": {
+      "title": "Limpers late",
+      "seats": ["BTN"],
+      "players": [6, 6],
+      "limpers": [3, 3],
+      "choices": ["raise", "fold"],
+      "ranges": { "raise": "AA" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "limpers.SB": {
+      "title": "Small blind facing limpers",
+      "seats": ["SB"],
+      "players": [6, 9],
+      "limpers": [1, 3],
+      "choices": ["raise", "call"],
+      "ranges": { "raise": "AA" },
+      "default": "call",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "limpers.BB": {
+      "title": "Big blind facing limpers",
+      "seats": ["BB"],
+      "players": [6, 9],
+      "limpers": [1, 3],
+      "choices": ["check", "raise"],
+      "ranges": { "raise": "22+" },
+      "default": "check",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "raise.vsEarly": {
+      "title": "Facing an early raise",
+      "seats": ["HJ", "CO", "BTN", "SB"],
+      "players": [6, 9],
+      "choices": ["reraise", "fold"],
+      "ranges": { "reraise": "AA" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "raise.vsLate": {
+      "title": "Facing a late raise",
+      "seats": ["SB"],
+      "players": [6, 9],
+      "raiser": ["BTN"],
+      "choices": ["reraise", "call", "fold"],
+      "ranges": { "reraise": "AA", "call": "KK" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    },
+    "bb.vsRaise": {
+      "title": "Big blind facing a raise",
+      "seats": ["BB"],
+      "players": [6, 9],
+      "raiser": ["SB"],
+      "choices": ["call", "fold"],
+      "ranges": { "call": "A2s+" },
+      "default": "fold",
+      "reason": "Odd reason.",
+      "sources": ["TBD"]
+    }
+  }
+}
