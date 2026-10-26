@@ -1,7 +1,9 @@
 import { useState } from 'preact/hooks';
 import type { AnswerInput } from '../../engine/types';
 
-const UNIT_LABEL: Record<Extract<AnswerInput, { kind: 'number' }>['unit'], string> = {
+type Unit = Extract<AnswerInput, { kind: 'number' }>['unit'];
+
+const UNIT_LABEL: Record<Unit, string> = {
   outs: 'outs',
   '%': '%',
   chips: 'chips',
@@ -17,7 +19,7 @@ export function parseNumber(text: string): number | null {
 }
 
 interface Props {
-  unit: Extract<AnswerInput, { kind: 'number' }>['unit'];
+  unit: Unit;
   onSubmit(value: number): void;
 }
 
@@ -32,25 +34,33 @@ export function NumberInput({ unit, onSubmit }: Props) {
 
   return (
     <form class="stack" onSubmit={submit}>
-      <div class="number-input">
-        <label class="number-field">
-          <span class="visually-hidden">Your answer in {UNIT_LABEL[unit]}</span>
-          <input
-            type="text"
-            inputMode="decimal"
-            autoComplete="off"
-            autoCorrect="off"
-            enterKeyHint="done"
-            placeholder="0"
-            value={text}
-            onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)}
-          />
-          <span class="number-unit">{UNIT_LABEL[unit]}</span>
-        </label>
-      </div>
-      <button type="submit" class="btn btn--primary" disabled={value === null}>
+      <label class="panel numfield">
+        <span class="visually-hidden">Your answer in {UNIT_LABEL[unit]}</span>
+        <input
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          autoCorrect="off"
+          enterKeyHint="done"
+          placeholder="0"
+          value={text}
+          onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)}
+        />
+        <span class="numfield-unit">{UNIT_LABEL[unit]}</span>
+      </label>
+      <button type="submit" class="btn btn--big btn--blue" disabled={value === null}>
         Check
       </button>
     </form>
+  );
+}
+
+/** What was answered, kept on screen behind the feedback sheet: green border if right, red if not. */
+export function NumberShown({ unit, value, correct }: { unit: Unit; value: number; correct: boolean }) {
+  return (
+    <div class={correct ? 'panel numfield numfield--right' : 'panel numfield numfield--wrong'}>
+      <span class="numfield-value">{value}</span>
+      <span class="numfield-unit">{UNIT_LABEL[unit]}</span>
+    </div>
   );
 }

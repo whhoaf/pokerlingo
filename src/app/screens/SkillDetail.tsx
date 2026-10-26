@@ -24,32 +24,32 @@ export function SkillDetailScreen({ skillId, curriculum, records, logs, now, onB
   return (
     <div class="screen screen--tabs">
       <div class="screen-head">
-        <button type="button" class="btn btn--plain btn--small" onClick={onBack}>
+        <button type="button" class="btn btn--dark" onClick={onBack}>
           Back
         </button>
-        <span class={`pill pill--${state}`}>{stateLabel(state)}</span>
+        <span class={`state state--${state}`}>{stateLabel(state)}</span>
       </div>
 
       <div class="stack">
-        <div class="eyebrow">{skill.id}</div>
+        <div class="lbl">{skill.id}</div>
         <h1>{skill.title}</h1>
       </div>
 
       <div class="stats">
-        <div class="stat">
-          <span class="muted small">Accuracy</span>
-          <span class="big-number">{formatPercent(acc.answered === 0 ? null : acc.correct / acc.answered)}</span>
-          <span class="muted small">{acc.answered === 0 ? 'No answers yet' : `${acc.correct} of ${acc.answered} right`}</span>
+        <div class="stat stat--green">
+          <span class="lbl">Accuracy</span>
+          <span class="stat-num">{formatPercent(acc.answered === 0 ? null : acc.correct / acc.answered)}</span>
+          <span class="stat-unit">{acc.answered === 0 ? 'No answers yet' : `${acc.correct} of ${acc.answered} right`}</span>
         </div>
-        <div class="stat">
-          <span class="muted small">Next review</span>
-          <span style="font-size:22px;font-weight:800">{record ? formatDueIn(record.card.due, now) : 'Not started'}</span>
+        <div class="stat stat--blue">
+          <span class="lbl">Next review</span>
+          <span class="stat-text">{record ? formatDueIn(record.card.due, now) : 'Not started'}</span>
         </div>
       </div>
 
       <Explainer skill={skill} />
 
-      <p class="muted small">
+      <p class="panel small">
         {state === 'locked'
           ? `Unlocks once you have met ${missing.map((m) => curriculum.get(m).id).join(', ')}. `
           : ''}
@@ -57,7 +57,7 @@ export function SkillDetailScreen({ skillId, curriculum, records, logs, now, onB
       </p>
 
       <div class="actions">
-        <button type="button" class="btn btn--primary" disabled={state === 'locked'} onClick={onPractise}>
+        <button type="button" class="btn btn--big btn--blue" disabled={state === 'locked'} onClick={onPractise}>
           Practise
         </button>
       </div>

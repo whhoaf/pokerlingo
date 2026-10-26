@@ -6,18 +6,19 @@ export function Explainer({ skill, withReading = true }: { skill: SkillDef; with
   const { body, example } = skill.explainer;
   return (
     <div class="stack explainer">
-      <div>
+      <div class="panel">
         {body.map((p) => (
           <p key={p}>{p}</p>
         ))}
       </div>
-      <div class="example">
-        <div class="eyebrow">Worked example</div>
+      <div class="stack example">
+        <div class="lbl">Worked example</div>
         <Table table={example.table} />
-        <p class="prompt">{example.prompt}</p>
+        <p class="panel prompt">{example.prompt}</p>
         <div class="panel panel--good">
-          <div class="feedback-answer">Answer: {example.answer}</div>
-          <ul class="working">
+          <div class="lbl">Answer</div>
+          <div class="ansline">{example.answer}</div>
+          <ul class="work">
             {example.working.map((line) => (
               <li key={line}>{line}</li>
             ))}
@@ -25,8 +26,8 @@ export function Explainer({ skill, withReading = true }: { skill: SkillDef; with
         </div>
       </div>
       {withReading && skill.furtherReading && skill.furtherReading.length > 0 && (
-        <div>
-          <div class="eyebrow">Further reading</div>
+        <div class="panel">
+          <div class="lbl">Further reading</div>
           <ul class="links">
             {skill.furtherReading.map((l) => (
               <li key={l.url}>

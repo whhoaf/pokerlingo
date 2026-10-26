@@ -1,6 +1,9 @@
 import type { TableView } from '../../engine/types';
 import { PlayingCard } from './PlayingCard';
 
+/** Cards are dealt one after another, this many milliseconds apart. */
+const DEAL_GAP = 120;
+
 function Chip({ label, value, bet = false }: { label: string; value: string | number; bet?: boolean }) {
   return (
     <span class={bet ? 'chip chip--bet' : 'chip'}>
@@ -10,51 +13,56 @@ function Chip({ label, value, bet = false }: { label: string; value: string | nu
   );
 }
 
-/** The felt table: board in the middle, your cards below, pot and bet as labelled chips. */
+/** The felt: pot and bet as chips, the board, your cards slightly fanned, and a note in gold. */
 export function Table({ table }: { table: TableView }) {
   const hasChips = table.pot !== undefined || table.bet !== undefined || table.seat || table.players;
   const board = table.board ?? [];
+  const villain = table.villain ?? [];
+  const hole = table.hole ?? [];
+  // Deal order follows the order on screen, so each card lands a beat after the one before.
+  let dealt = 0;
+  const next = () => dealt++ * DEAL_GAP;
   return (
-    <div class="table" aria-label="Table">
+    <div class="felt" aria-label="Table">
       {hasChips && (
-        <div class="table-chips">
+        <div class="felt-chips">
           {table.seat && <Chip label="Seat" value={table.seat} />}
           {table.players !== undefined && <Chip label="Players" value={table.players} />}
           {table.pot !== undefined && <Chip label="Pot" value={table.pot} />}
           {table.bet !== undefined && <Chip label="Bet to call" value={table.bet} bet />}
         </div>
       )}
-      {table.villain && table.villain.length > 0 && (
+      {villain.length > 0 && (
         <div>
-          <div class="table-label">Opponent</div>
+          <div class="lbl">Opponent</div>
           <div class="card-row">
-            {table.villain.map((c) => (
-              <PlayingCard key={c} card={c} />
+            {villain.map((c) => (
+              <PlayingCard key={c} card={c} delay={next()} />
             ))}
           </div>
         </div>
       )}
       {board.length > 0 && (
         <div>
-          <div class="table-label">Board</div>
+          <div class="lbl">Board</div>
           <div class="card-row">
             {board.map((c) => (
-              <PlayingCard key={c} card={c} />
+              <PlayingCard key={c} card={c} delay={next()} />
             ))}
           </div>
         </div>
       )}
-      {table.hole && table.hole.length > 0 && (
+      {hole.length > 0 && (
         <div>
-          <div class="table-label">Your cards</div>
-          <div class="card-row">
-            {table.hole.map((c) => (
-              <PlayingCard key={c} card={c} />
+          <div class="lbl">Your cards</div>
+          <div class="card-row card-row--hand">
+            {hole.map((c, i) => (
+              <PlayingCard key={c} card={c} size="hand" tilt={hole.length === 2 ? (i === 0 ? -5 : 5) : 0} delay={next()} />
             ))}
           </div>
         </div>
       )}
-      {table.note && <div class="table-note">{table.note}</div>}
+      {table.note && <div class="felt-note">{table.note}</div>}
     </div>
   );
 }

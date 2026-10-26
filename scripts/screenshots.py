@@ -72,8 +72,17 @@ TAP_TARGETS_JS = """
 """
 
 
+ANIMATIONS_DONE_JS = "() => document.getAnimations().every((a) => !(a instanceof CSSAnimation) || a.playState !== 'running')"
+
+
+def settle(page: Page, extra: int = 150) -> None:
+    """Wait for the cards to be dealt and the sheet to land, so the picture shows the finished screen."""
+    page.wait_for_function(ANIMATIONS_DONE_JS, timeout=8000)
+    page.wait_for_timeout(extra)
+
+
 def shot(page: Page, name: str) -> None:
-    page.wait_for_timeout(150)
+    settle(page, 500 if "summary" in name else 150)  # numbers roll up for 300 ms on the summary
     for item in page.evaluate(CHECK_LAYOUT_JS):
         problem(f"{name}: {item}")
     for item in page.evaluate(TAP_TARGETS_JS):
@@ -85,6 +94,21 @@ def shot(page: Page, name: str) -> None:
 def number_answer(page: Page, value: str) -> None:
     page.locator("input[type=text]").fill(value)
     page.get_by_role("button", name="Check").click()
+
+
+def open_tab(page: Page, name: str) -> None:
+    """Go to Today, Skills or Settings. Home has buttons instead of the tab bar."""
+    tab = page.locator(".tab", has_text=name)
+    if tab.count() > 0:
+        tab.click()
+    else:
+        label = {"Skills": "Skill map", "Settings": "Settings"}[name]
+        page.get_by_role("button", name=label, exact=True).click()
+
+
+def wait_tag(page: Page, label: str, value: str) -> None:
+    """Wait for the tag in the top bar, for example New skill and 1 of 2."""
+    page.locator(".hud .tag", has_text=re.compile(label, re.I)).filter(has_text=value).wait_for()
 
 
 def click(page: Page, name: str, exact: bool = False) -> None:
@@ -176,8 +200,8 @@ def answer_any(page: Page, index: int = 0) -> None:
 
 def wait_for_feedback(page: Page) -> str:
     """Wait for the feedback panel and say whether it was right."""
-    page.locator(".feedback-title").wait_for()
-    return "correct" if page.locator(".feedback-title").inner_text().strip() == "Correct" else "wrong"
+    page.locator(".res-word").wait_for()
+    return "correct" if page.locator(".res-word").inner_text().strip() == "Right!" else "wrong"
 
 
 def skill_row(page: Page, skill_id: str):
@@ -202,13 +226,13 @@ def d1_answer(prompt: str) -> str:
 
 def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
     """Open a skill, screenshot its explainer, then practise until one right and one wrong answer are saved."""
-    page.locator(".tab", has_text="Skills").click()
+    open_tab(page, "Skills")
     page.get_by_text("Reading the board").wait_for()
     skill_row(page, skill_id).click()
     page.get_by_text("Worked example").wait_for()
     shot(page, f"{prefix}-{skill_id}-skill-detail")
     click(page, "Practise")
-    page.get_by_text(f"Practice, {skill_id}").wait_for()
+    page.locator(".hud-info", has_text=skill_id).wait_for()
     got: set[str] = set()
     for attempt in range(18):
         page.locator(".prompt").wait_for()
@@ -216,7 +240,7 @@ def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
         if attempt == 0:
             shot(page, f"{prefix}-{skill_id}-question")
             if skill_id == "C4":
-                cards = page.locator(".choice .pcard").count()
+                cards = page.locator(".choice .card").count()
                 if cards != 8:
                     problem(f"C4 should show 8 mini cards in its choices, found {cards}")
         if skill_id == "D1":
@@ -228,7 +252,7 @@ def practise_skill(page: Page, skill_id: str, prefix: str) -> None:
         else:
             answer_any(page, attempt)
         outcome = wait_for_feedback(page)
-        label = page.locator(".outs-label")
+        label = page.locator(".outs .lbl")
         if skill_id == "C4" and outcome == "correct" and (label.count() == 0 or "nuts" not in label.inner_text().lower()):
             problem("C4 feedback does not label the nuts")
         if outcome not in got:
@@ -279,38 +303,38 @@ def main() -> None:
         shot(page, "01-install")
         page.get_by_role("button", name="Continue in the browser").click()
         page.get_by_text("Welcome").wait_for()
-        if "read the board" not in page.locator(".panel--accent").first.inner_text():
+        if "read the board" not in page.locator(".panel--gold").first.inner_text():
             problem("the welcome text does not mention reading the board")
         shot(page, "02-home-first-run")
 
         # ---- B. First session: B1 is placed, then C1 (reading the board) is met ----
         click(page, "Start a 10-minute session")
-        page.get_by_text("New skill, question 1 of 2").wait_for()
+        wait_tag(page, "New skill", "1 of 2")
         shot(page, "03-probe-question")
         page.locator("input[type=text]").fill("9")
         shot(page, "04-probe-number-filled")
         page.get_by_role("button", name="Check").click()
         shot(page, "05-probe-feedback-correct")
         click(page, "Next")
-        page.get_by_text("New skill, question 2 of 2").wait_for()
+        wait_tag(page, "New skill", "2 of 2")
         number_answer(page, "9")
         page.get_by_text("You already know this one").wait_for()
         shot(page, "06-probe-placed")
         click(page, "Next")
 
         # The second new skill is C1, so a new player meets both areas in the first session.
-        page.get_by_text("New skill, question 1 of 2").wait_for()
+        wait_tag(page, "New skill", "1 of 2")
         if page.locator(".choice").count() != 4:
             problem("the second new skill should be C1 with four hand-name choices")
         shot(page, "07-probe-choice-question")
         page.locator(".choice").nth(0).click()
         first = wait_for_feedback(page)
-        label = page.locator(".outs-label")
+        label = page.locator(".outs .lbl")
         if label.count() == 0 or "best five" not in label.inner_text().lower():
             problem("C1 feedback does not show the best five cards")
         shot(page, f"08-probe-choice-feedback-{first}")
         click(page, "Next")
-        page.get_by_text("New skill, question 2 of 2").wait_for()
+        wait_tag(page, "New skill", "2 of 2")
         page.locator(".choice").nth(1).click()
         second = wait_for_feedback(page)
         if first == "correct" and second == "correct":
@@ -324,7 +348,7 @@ def main() -> None:
             shot(page, "10-explainer")
             click(page, "Start practice")
             for n in range(3):
-                page.get_by_text("New skill, practice").wait_for()
+                wait_tag(page, "New skill", "Practice")
                 if n == 0:
                     shot(page, "11-practice-question")
                 page.locator(".choice").nth(n % 4).click()
@@ -342,7 +366,7 @@ def main() -> None:
         shot(page, "14-home-done-export-banner")
 
         # ---- C. Skill map, detail, locked skill, extra practice ----
-        page.locator(".tab", has_text="Skills").click()
+        open_tab(page, "Skills")
         page.get_by_text("Outs and pot odds").wait_for()
         for text in ["Reading the board", "Bet sizing", "Hands by seat"]:
             if page.get_by_text(text).count() == 0:
@@ -366,16 +390,16 @@ def main() -> None:
         click(page, "Back")
         page.locator(".skill-row", has_text="Count outs: flush draw").click()
         click(page, "Practise")
-        page.get_by_text("Practice, B1").wait_for()
+        page.locator(".hud-info", has_text="B1").wait_for()
         shot(page, "19-practice-question")
         number_answer(page, "9")
-        page.get_by_text("Correct").first.wait_for()
+        page.get_by_text("Right!").first.wait_for()
         shot(page, "20-practice-feedback")
         click(page, "Done", exact=True)
         page.get_by_text("Next review").wait_for()
 
         # ---- D. Settings, export, reset, import ----
-        page.locator(".tab", has_text="Settings").click()
+        open_tab(page, "Settings")
         page.get_by_text("Session length").wait_for()
         shot(page, "18-settings")
         page.get_by_role("button", name="15 min").click()
@@ -443,7 +467,7 @@ def main() -> None:
         shot(page, "25-home-reviews-due")
         for sid in ["C1", "C2", "C3", "C4", "C5", "C6", "D1"]:
             practise_skill(page, sid, "26")
-        page.locator(".tab", has_text="Today").click()
+        open_tab(page, "Today")
         page.get_by_text("still due will roll over").wait_for()
 
         # ---- F2. A review session over all 16 skills ----
@@ -452,7 +476,7 @@ def main() -> None:
         for i in range(1, 121):
             page.locator(".prompt").wait_for()
             tmp = OUT / f"_q{i}.png"
-            page.wait_for_timeout(100)
+            settle(page, 100)
             for item in page.evaluate(CHECK_LAYOUT_JS):
                 problem(f"review {i} question: {item}")
             for item in page.evaluate(TAP_TARGETS_JS):
@@ -464,7 +488,7 @@ def main() -> None:
             else:
                 number_answer(page, "1")
             page.get_by_text("Skill: ").wait_for()
-            page.wait_for_timeout(100)
+            settle(page, 100)  # the sheet slides up
             skill = re.search(r"Skill: ([A-D]\d)", page.get_by_text("Skill: ").inner_text()).group(1)
             box = page.get_by_role("button", name=re.compile("^(Next|Finish session)$")).bounding_box()
             if box is None or box["y"] + box["height"] > VIEWPORT["height"] + 1:
@@ -478,7 +502,7 @@ def main() -> None:
             else:
                 tmp.unlink()
             if i == 6:
-                page.locator(".session-top").get_by_role("button", name="End").click()
+                page.locator(".hud").get_by_role("button", name="End").click()
                 page.get_by_text("End this session?").wait_for()
                 shot(page, "31-end-dialog")
                 click(page, "Keep going")
@@ -487,7 +511,7 @@ def main() -> None:
             click(page, "Next")
         if len(seen) < len(SKILL_IDS):
             problem(f"only saw skills {sorted(seen)} in the review run after {i} questions")
-        page.locator(".session-top").get_by_role("button", name="End").click()
+        page.locator(".hud").get_by_role("button", name="End").click()
         page.get_by_text("End this session?").wait_for()
         click(page, "End session")
         page.get_by_text("Session ended early").wait_for()
@@ -533,7 +557,7 @@ def main() -> None:
         ctx.set_offline(True)
         page.reload()
         page.get_by_text("pokerlingo").first.wait_for()
-        page.locator(".tab", has_text="Skills").click()
+        open_tab(page, "Skills")
         page.get_by_text("Outs and pot odds").wait_for()
         shot(page, "38-offline-skill-map")
         ctx.set_offline(False)

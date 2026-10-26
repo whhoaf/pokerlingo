@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'preact/hooks';
 import type { GradeResult } from '../../engine/types';
 import { sortByRank } from '../../engine/cards';
 import { CardRow } from './PlayingCard';
@@ -11,7 +12,10 @@ interface Props {
   onNext(): void;
 }
 
-/** Right or wrong, the correct answer, one line of reasoning and the supporting picture. */
+/**
+ * Right or wrong, the correct answer, one line of reasoning and the supporting picture, on a sheet that slides up
+ * from the bottom. The Next button stays on the sheet, and the screen behind gets room to scroll above it.
+ */
 export function Feedback({ result, skillTitle, note, nextLabel = 'Next', onNext }: Props) {
   // Outs are sorted high to low. Labelled cards keep the order the skill gave them.
   const shown =
@@ -21,39 +25,55 @@ export function Feedback({ result, skillTitle, note, nextLabel = 'Next', onNext 
         : sortByRank(result.highlight)
       : null;
   const shownLabel = result.highlightLabel ?? `Your outs (${shown?.length ?? 0})`;
-  // The button is a direct child of the screen, not of the stack. A sticky element cannot leave its
-  // parent, so inside the stack it was pushed below the fold when feedback began near the bottom.
+
+  const sheet = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = sheet.current;
+    if (!el) return;
+    const root = document.documentElement.style;
+    const update = () => root.setProperty('--sheet-h', `${el.offsetHeight}px`);
+    update();
+    const watcher = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+    watcher?.observe(el);
+    return () => {
+      watcher?.disconnect();
+      root.setProperty('--sheet-h', '0px');
+    };
+  }, []);
+
   return (
-    <>
-      <div class="stack" aria-live="polite">
-        <div class={result.correct ? 'panel panel--good' : 'panel panel--bad'}>
-          <div class="feedback-head">
-            <span class="feedback-title">{result.correct ? 'Correct' : 'Not quite'}</span>
-            <span class="feedback-answer">Answer: {result.correctLabel}</span>
-          </div>
-          <p style="margin-top:8px">{result.reason}</p>
-          {result.working && result.working.length > 0 && (
-            <ul class="working">
-              {result.working.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          )}
-          {shown && (
-            <>
-              <div class="outs-label">{shownLabel}</div>
-              <CardRow cards={shown} left />
-            </>
-          )}
+    <section ref={sheet} class={result.correct ? 'sheet sheet--good' : 'sheet sheet--bad'} aria-live="polite">
+      <div class="sheet-body">
+        <div class="res">
+          <span class="res-word">{result.correct ? 'Right!' : 'Not quite'}</span>
+          {result.correct && <span class="plus">+1</span>}
         </div>
-        {note && <div class="message">{note}</div>}
-        <p class="muted small">Skill: {skillTitle}</p>
+        <div class="ansbox">
+          <div class="lbl">Answer</div>
+          <div class="ansline">{result.correctLabel}</div>
+        </div>
+        <p class="why">{result.reason}</p>
+        {result.working && result.working.length > 0 && (
+          <ul class="work">
+            {result.working.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+        {shown && (
+          <div class="outs">
+            <div class="lbl">{shownLabel}</div>
+            <CardRow cards={shown} left />
+          </div>
+        )}
+        {note && <div class="note-box">{note}</div>}
+        <p class="small">Skill: {skillTitle}</p>
       </div>
-      <div class="actions">
-        <button type="button" class="btn btn--primary" onClick={onNext}>
+      <div class="sheet-foot">
+        <button type="button" class="btn btn--big btn--orange" onClick={onNext}>
           {nextLabel}
         </button>
       </div>
-    </>
+    </section>
   );
 }

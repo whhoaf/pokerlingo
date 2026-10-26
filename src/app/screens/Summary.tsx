@@ -1,6 +1,7 @@
 import type { Curriculum } from '../../engine/curriculum';
 import type { SessionSummary } from '../../engine/session';
-import { formatPercent } from '../format';
+import { RollNumber } from '../components/RollNumber';
+import { useMood } from '../useMood';
 
 interface Props {
   summary: SessionSummary;
@@ -10,38 +11,51 @@ interface Props {
 }
 
 export function SummaryScreen({ summary, streak, curriculum, onDone }: Props) {
+  useMood('purple');
   return (
     <div class="screen">
-      <div class="stack">
-        <div class="eyebrow">{summary.finished ? 'Session complete' : 'Session ended early'}</div>
+      <div class="panel stack">
+        <div class="lbl">{summary.finished ? 'Session complete' : 'Session ended early'}</div>
         <h1>{summary.finished ? 'Nice work' : 'Stopped early'}</h1>
-        {!summary.finished && <p class="muted">An early end does not count towards your streak.</p>}
+        {!summary.finished && <p>An early end does not count towards your streak.</p>}
       </div>
 
       <div class="stats">
-        <div class="stat">
-          <span class="muted small">Questions</span>
-          <span class="big-number">{summary.answered}</span>
+        <div class="stat stat--blue">
+          <span class="lbl">Questions</span>
+          <span class="stat-num">
+            <RollNumber value={summary.answered} />
+          </span>
         </div>
-        <div class="stat">
-          <span class="muted small">Accuracy</span>
-          <span class="big-number">{formatPercent(summary.accuracy)}</span>
+        <div class="stat stat--green">
+          <span class="lbl">Accuracy</span>
+          <span class="stat-num">
+            {summary.accuracy === null ? (
+              'n/a'
+            ) : (
+              <RollNumber value={Math.round(summary.accuracy * 100)} format={(n) => `${n}%`} />
+            )}
+          </span>
         </div>
-        <div class="stat">
-          <span class="muted small">Streak</span>
-          <span class="big-number">{streak}</span>
-          <span class="muted small">{streak === 1 ? 'day' : 'days'}</span>
+        <div class="stat stat--red">
+          <span class="lbl">Streak</span>
+          <span class="stat-num">
+            <RollNumber value={streak} />
+          </span>
+          <span class="stat-unit">{streak === 1 ? 'day' : 'days'}</span>
         </div>
-        <div class="stat">
-          <span class="muted small">Due tomorrow</span>
-          <span class="big-number">{summary.dueTomorrow}</span>
-          <span class="muted small">{summary.dueTomorrow === 1 ? 'skill' : 'skills'}</span>
+        <div class="stat stat--orange">
+          <span class="lbl">Due tomorrow</span>
+          <span class="stat-num">
+            <RollNumber value={summary.dueTomorrow} />
+          </span>
+          <span class="stat-unit">{summary.dueTomorrow === 1 ? 'skill' : 'skills'}</span>
         </div>
       </div>
 
       {summary.newSkills.length > 0 && (
         <div class="panel stack">
-          <div class="eyebrow">New today</div>
+          <div class="lbl">New today</div>
           {summary.newSkills.map((id) => (
             <p key={id}>
               <strong>{id}</strong> {curriculum.get(id).title}
@@ -51,7 +65,7 @@ export function SummaryScreen({ summary, streak, curriculum, onDone }: Props) {
       )}
 
       <div class="actions">
-        <button type="button" class="btn btn--primary" onClick={onDone}>
+        <button type="button" class="btn btn--big btn--orange" onClick={onDone}>
           Done
         </button>
       </div>

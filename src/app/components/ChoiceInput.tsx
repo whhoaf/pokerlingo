@@ -11,8 +11,9 @@ interface Props {
 
 export function ChoiceInput({ options, onPick, picked, correctId }: Props) {
   const locked = picked !== undefined;
+  const withCards = options.some((o) => o.cards);
   return (
-    <div class="choices" role="group" aria-label="Answer choices">
+    <div class={withCards ? 'choices choices--cards' : 'choices'} role="group" aria-label="Answer choices">
       {options.map((o) => {
         const classes = ['choice'];
         if (locked && o.id === picked) classes.push('choice--picked');

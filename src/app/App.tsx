@@ -6,8 +6,10 @@ import type { Db } from '../storage/db';
 import { buildBackup, importBackup, type BackupFile } from '../storage/exportImport';
 import { createRepo, type Settings } from '../storage/repo';
 import { saveBackupFile } from './backupFile';
+import { Background } from './background';
 import { needsExport } from './backupStatus';
 import { loadAppData, overview, type AppData } from './data';
+import { registerBackground } from './useMood';
 import { HomeScreen } from './screens/Home';
 import { InstallScreen } from './screens/Install';
 import { PracticeScreen } from './screens/Practice';
@@ -27,7 +29,8 @@ type Screen =
   | { name: 'practice'; run: PracticeRun; id: string }
   | { name: 'settings' };
 
-const TAB_SCREENS = new Set(['home', 'skills', 'skill', 'settings']);
+// Home has its own buttons for the skill map and settings, so it shows no tab bar.
+const TAB_SCREENS = new Set(['skills', 'skill', 'settings']);
 const DISMISS_KEY = 'pokerlingo-install-dismissed';
 
 function randomSeed(): number {
@@ -51,6 +54,8 @@ export function App({ db }: { db: Db }) {
     const { browser, display } = readBrowser();
     return shouldShowInstallScreen(browser, display, installDismissed()) ? { name: 'install' } : { name: 'home' };
   });
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const background = useRef<Background | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
 
@@ -69,11 +74,35 @@ export function App({ db }: { db: Db }) {
     void reload();
   }, [reload]);
 
+  // The swirl behind everything. It lives as long as the app does.
+  useEffect(() => {
+    if (!canvas.current) return;
+    const bg = new Background(canvas.current);
+    background.current = bg;
+    registerBackground(bg);
+    bg.start();
+    return () => {
+      bg.stop();
+      registerBackground(null);
+      background.current = null;
+    };
+  }, []);
+
+  const animated = data?.settings.animatedBackground ?? true;
+  useEffect(() => {
+    background.current?.setAnimated(animated);
+  }, [animated]);
+
+  const backdrop = <canvas id="bg" ref={canvas} aria-hidden="true" />;
+
   if (!data) {
     return (
-      <div class="screen">
-        <p class="muted">Loading</p>
-      </div>
+      <>
+        {backdrop}
+        <div class="screen">
+          <p class="panel">Loading</p>
+        </div>
+      </>
     );
   }
 
@@ -177,6 +206,8 @@ export function App({ db }: { db: Db }) {
           exportMessage={exportMessage}
           onStart={startSession}
           onExport={exportProgress}
+          onSkills={() => go({ name: 'skills' })}
+          onSettings={() => go({ name: 'settings' })}
         />
       );
       break;
@@ -249,6 +280,7 @@ export function App({ db }: { db: Db }) {
   const tab = screen.name === 'skill' ? 'skills' : screen.name;
   return (
     <>
+      {backdrop}
       {body}
       {TAB_SCREENS.has(screen.name) && (
         <nav class="tabbar" aria-label="Main">

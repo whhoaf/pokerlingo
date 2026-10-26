@@ -13,13 +13,13 @@ interface Props {
 export function ConfirmDialog({ title, children, confirmLabel, cancelLabel = 'Cancel', danger = false, onConfirm, onCancel }: Props) {
   return (
     <div class="overlay" role="presentation">
-      <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title">
+      <div class="panel dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title">
         <h2 id="dialog-title">{title}</h2>
         <div class="stack">{children}</div>
-        <button type="button" class={danger ? 'btn btn--primary btn--danger-solid' : 'btn btn--primary'} onClick={onConfirm}>
+        <button type="button" class={danger ? 'btn btn--big btn--red' : 'btn btn--big btn--blue'} onClick={onConfirm}>
           {confirmLabel}
         </button>
-        <button type="button" class="btn" onClick={onCancel}>
+        <button type="button" class="btn btn--big btn--dark" onClick={onCancel}>
           {cancelLabel}
         </button>
       </div>

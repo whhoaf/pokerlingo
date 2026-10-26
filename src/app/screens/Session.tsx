@@ -5,10 +5,11 @@ import { ChoiceInput } from '../components/ChoiceInput';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Explainer } from '../components/Explainer';
 import { Feedback } from '../components/Feedback';
-import { NumberInput } from '../components/NumberInput';
+import { NumberInput, NumberShown } from '../components/NumberInput';
 import { Table } from '../components/Table';
 import { Timer } from '../components/Timer';
 import { formatDueIn } from '../format';
+import { useMood } from '../useMood';
 
 interface Props {
   session: Session;
@@ -19,16 +20,23 @@ interface Props {
 
 type QuestionStep = Extract<Step, { kind: 'question' }>;
 
-function purposeText(step: QuestionStep): string {
+interface TagContent {
+  kind: 'new' | 'review' | 'retry';
+  label: string;
+  value: string;
+}
+
+/** The tag in the top bar: what kind of question this is. */
+function tagFor(step: QuestionStep): TagContent {
   switch (step.purpose) {
     case 'review':
-      return 'Review';
+      return { kind: 'review', label: 'Review', value: step.skillId };
     case 'retry':
-      return 'Second try, with a fresh question';
+      return { kind: 'retry', label: 'Second try', value: step.skillId };
     case 'probe':
-      return `New skill, question ${step.probeNumber ?? 1} of 2`;
+      return { kind: 'new', label: 'New skill', value: `${step.probeNumber ?? 1} of 2` };
     case 'practice':
-      return 'New skill, practice';
+      return { kind: 'new', label: 'New skill', value: 'Practice' };
   }
 }
 
@@ -37,11 +45,18 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
   const bump = () => setTick((n) => n + 1);
   const [confirmQuit, setConfirmQuit] = useState(false);
   const [picked, setPicked] = useState<string | undefined>(undefined);
+  const [given, setGiven] = useState<number | undefined>(undefined);
+  const [low, setLow] = useState(false);
   const step = session.step;
+
+  // Green normally, blue while a new skill is being introduced, red in the last minute.
+  const introducing = step.kind === 'explainer' || (step.kind === 'question' && (step.purpose === 'probe' || step.purpose === 'practice'));
+  useMood(low ? 'red' : introducing ? 'blue' : 'green');
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setPicked(undefined);
+    setGiven(undefined);
   }, [step]);
 
   useEffect(() => {
@@ -51,18 +66,25 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
   if (step.kind === 'ended') {
     return (
       <div class="screen">
-        <p class="muted">Saving your session</p>
+        <p class="panel">Saving your session</p>
       </div>
     );
   }
 
+  const tag: TagContent =
+    step.kind === 'question' ? tagFor(step) : { kind: 'new', label: 'New skill', value: step.skill.id };
+
   const top = (
-    <div class="session-top">
-      <Timer remainingMs={() => session.remainingMs()} totalMs={totalMs} />
-      <button type="button" class="btn btn--plain btn--small" onClick={() => setConfirmQuit(true)}>
+    <header class="hud">
+      <Timer remainingMs={() => session.remainingMs()} totalMs={totalMs} onLowChange={setLow} />
+      <div class={`panel tag tag--${tag.kind}`}>
+        <span class="lbl">{tag.label}</span>
+        <b>{tag.value}</b>
+      </div>
+      <button type="button" class="btn btn--red" onClick={() => setConfirmQuit(true)}>
         End
       </button>
-    </div>
+    </header>
   );
 
   const dialog = confirmQuit && (
@@ -86,14 +108,16 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
     return (
       <div class="screen">
         {top}
-        <div class="eyebrow">New skill</div>
-        <h1>{step.skill.title}</h1>
-        <p class="muted">Take a minute with this one, then try some questions.</p>
+        <div class="panel stack">
+          <div class="lbl">New skill</div>
+          <h1>{step.skill.title}</h1>
+          <p>Take a minute with this one, then try some questions.</p>
+        </div>
         <Explainer skill={step.skill} withReading={false} />
         <div class="actions">
           <button
             type="button"
-            class="btn btn--primary"
+            class="btn btn--big btn--orange"
             onClick={() => {
               session.advance();
               bump();
@@ -117,6 +141,7 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
     bump();
   };
   const submitNumber = (value: number) => {
+    setGiven(value);
     session.submit({ kind: 'number', value });
     bump();
   };
@@ -134,16 +159,20 @@ export function SessionScreen({ session, curriculum, totalMs, onEnded }: Props) 
   return (
     <div class="screen">
       {top}
-      <div class="eyebrow">{purposeText(step)}</div>
-      <Table table={q.table} />
-      <p class="prompt">{q.prompt}</p>
+      <Table key={`${q.skillId}-${q.seed}`} table={q.table} />
+      <p class="panel prompt">{q.prompt}</p>
 
-      {!result && q.input.kind === 'choice' && <ChoiceInput options={q.input.options} onPick={submitChoice} />}
-      {!result && q.input.kind === 'number' && <NumberInput unit={q.input.unit} onSubmit={submitNumber} />}
+      <div class="answer">
+        {!result && q.input.kind === 'choice' && <ChoiceInput options={q.input.options} onPick={submitChoice} />}
+        {!result && q.input.kind === 'number' && <NumberInput unit={q.input.unit} onSubmit={submitNumber} />}
 
-      {result && q.input.kind === 'choice' && (
-        <ChoiceInput options={q.input.options} onPick={() => {}} picked={picked ?? ''} correctId={correctId} />
-      )}
+        {result && q.input.kind === 'choice' && (
+          <ChoiceInput options={q.input.options} onPick={() => {}} picked={picked ?? ''} correctId={correctId} />
+        )}
+        {result && q.input.kind === 'number' && given !== undefined && (
+          <NumberShown unit={q.input.unit} value={given} correct={result.correct} />
+        )}
+      </div>
       {result && (
         <Feedback
           result={result}

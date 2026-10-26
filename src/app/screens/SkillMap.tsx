@@ -23,11 +23,11 @@ export function SkillMapScreen({ curriculum, records, onOpen }: Props) {
       {AREAS.map((area) => {
         const skills = curriculum.inArea(area.id);
         return (
-          <section key={area.id} class="area-block" aria-label={`Area ${area.id}: ${area.name}`}>
+          <section key={area.id} class="panel area" aria-label={`Area ${area.id}: ${area.name}`}>
             <h2>
               {area.id}. {area.name}
             </h2>
-            {skills.length === 0 && <p class="muted">Coming in a later update.</p>}
+            {skills.length === 0 && <p class="soft">Coming in a later update.</p>}
             {skills.map((s) => {
               const state = curriculum.stateOf(s.id, records);
               return (
@@ -39,14 +39,12 @@ export function SkillMapScreen({ curriculum, records, onOpen }: Props) {
                 >
                   <span class="skill-id">{s.id}</span>
                   <span class="skill-title">{s.title}</span>
-                  <span class={`pill pill--${state}`}>{stateLabel(state)}</span>
+                  <span class={`state state--${state}`}>{stateLabel(state)}</span>
                 </button>
               );
             })}
             {skills.length > 0 && skills.length < area.total && (
-              <p class="muted">
-                {`Coming in a later update: ${area.id}${skills.length + 1} to ${area.id}${area.total}.`}
-              </p>
+              <p class="soft">{`Coming in a later update: ${area.id}${skills.length + 1} to ${area.id}${area.total}.`}</p>
             )}
           </section>
         );

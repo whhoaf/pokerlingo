@@ -15,7 +15,7 @@ async function boot(root: HTMLElement) {
     render(
       <div class="screen">
         <h1>pokerlingo</h1>
-        <div class="message message--error">
+        <div class="panel message message--error">
           Storage is not available in this browser, so progress cannot be saved. Private browsing can cause this. Try a normal
           window.
         </div>

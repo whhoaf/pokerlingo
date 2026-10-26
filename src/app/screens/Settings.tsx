@@ -74,8 +74,8 @@ export function SettingsScreen({
     <div class="screen screen--tabs">
       <h1>Settings</h1>
 
-      <div class="stack">
-        <div class="field-label" id="len-label">
+      <div class="panel stack">
+        <div class="lbl" id="len-label">
           Session length
         </div>
         <div class="segmented" role="group" aria-labelledby="len-label">
@@ -92,8 +92,8 @@ export function SettingsScreen({
         </div>
       </div>
 
-      <div class="stack">
-        <div class="field-label" id="new-label">
+      <div class="panel stack">
+        <div class="lbl" id="new-label">
           New skills per session
         </div>
         <div class="segmented" role="group" aria-labelledby="new-label">
@@ -108,19 +108,43 @@ export function SettingsScreen({
             </button>
           ))}
         </div>
-        <p class="muted small">New skills only appear once your reviews are cleared.</p>
+        <p class="small">New skills only appear once your reviews are cleared.</p>
       </div>
 
-      <div class="stack">
-        <div class="field-label">Backup</div>
-        <p class="muted small">
+      <div class="panel stack">
+        <div class="switch-row">
+          <div class="stack">
+            <div class="lbl" id="bg-label">
+              Animated background
+            </div>
+            <p class="small" id="bg-hint">
+              A slow moving pattern behind the app. Turn it off for one still picture.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="switch"
+            role="switch"
+            aria-checked={settings.animatedBackground}
+            aria-labelledby="bg-label"
+            aria-describedby="bg-hint"
+            onClick={() => onChange({ ...settings, animatedBackground: !settings.animatedBackground })}
+          >
+            <span class="switch-knob" />
+          </button>
+        </div>
+      </div>
+
+      <div class="panel stack">
+        <div class="lbl">Backup</div>
+        <p class="small">
           {lastExportAt ? `Last backup: ${formatShortDate(lastExportAt)}.` : 'You have not made a backup yet.'} Your progress
           lives only on this device, so keep a copy.
         </p>
-        <button type="button" class="btn" onClick={onExport} disabled={exporting}>
+        <button type="button" class="btn btn--blue btn--block" onClick={onExport} disabled={exporting}>
           {exporting ? 'Exporting' : 'Export progress'}
         </button>
-        <button type="button" class="btn" onClick={() => fileInput.current?.click()}>
+        <button type="button" class="btn btn--dark btn--block" onClick={() => fileInput.current?.click()}>
           Import a backup
         </button>
         <input
@@ -135,26 +159,30 @@ export function SettingsScreen({
       </div>
 
       {exportMessage && !message && (
-        <div class="message" role="status">
+        <div class="panel message" role="status">
           {exportMessage}
         </div>
       )}
       {message && (
-        <div class={message.error ? 'message message--error' : 'message'} role="status">
+        <div class={message.error ? 'panel message message--error' : 'panel message'} role="status">
           {message.text}
         </div>
       )}
 
-      <div class="stack">
-        <div class="field-label">Reset</div>
-        <button type="button" class="btn btn--danger" onClick={() => setConfirmReset(true)}>
+      <div class="panel stack">
+        <div class="lbl">Reset</div>
+        <button type="button" class="btn btn--red btn--block" onClick={() => setConfirmReset(true)}>
           Reset progress
         </button>
       </div>
 
-      <p class="muted small">
-        pokerlingo {pkg.version}. Everything stays on this device. There are no accounts, no analytics and no tracking.
-      </p>
+      <div class="panel stack">
+        <div class="lbl">Credits</div>
+        <p class="small">Pixel font: m6x11plus by Daniel Linssen (managore.itch.io/m6x11).</p>
+        <p class="small">
+          pokerlingo {pkg.version}. Everything stays on this device. There are no accounts, no analytics and no tracking.
+        </p>
+      </div>
 
       {pending && (
         <ConfirmDialog
