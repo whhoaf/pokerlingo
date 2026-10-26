@@ -98,7 +98,7 @@
       "ranges": { "raise": "TT+, AQs+, AQo+" },
       "either": [{ "hands": "77-99, ATs, AJs, KQs, KJs, QJs, AJo, KQo", "accept": ["raise", "fold"] }],
       "default": "fold",
-      "reason": "Raise your strong hands to punish the limpers. The more players limp, the tighter you raise, and with many players still behind you, do not limp along.",
+      "reason": "Raise your strong hands to punish the limpers. The borderline hands are a raise against one limper and a fold against several, and with many players still behind you, do not limp along.",
       "sources": ["S11", "S14", "S19"]
     },
     "limpers.late": {

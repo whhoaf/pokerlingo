@@ -33,7 +33,7 @@
       "unit": "x",
       "inPosition": { "min": 3, "max": 4 },
       "outOfPosition": { "min": 4, "max": 5 },
-      "reason": "Re-raise to about 3 times the raise when you will act after them, and about 4 times when you will act first after the flop.",
+      "reason": "Re-raise to 3 to 4 times the raise when you will act after them, and 4 to 5 times when you will act first after the flop.",
       "sources": ["S9", "S32", "S1", "S18"]
     },
     "D4": {
@@ -41,7 +41,7 @@
       "unit": "pot",
       "dry": { "min": 0.25, "max": 0.35 },
       "wet": { "min": 0.55, "max": 0.8 },
-      "reason": "Bet small, a quarter to a third of the pot, on a dry board. Bet big, two thirds to three quarters, on a wet board where draws are possible, so they pay to chase.",
+      "reason": "Bet small, a quarter to a third of the pot, on a dry board. Bet big, two thirds to three quarters, on a wet board where draws are possible, so they pay to chase. Half the pot sits between the two, so it is not the answer for either.",
       "sources": ["S32", "S33", "S34"]
     },
     "D5": {
