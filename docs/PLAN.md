@@ -203,14 +203,81 @@ Outs for B1, B2, B3 and B5 are the unseen cards that give you a straight or a fl
 - **C6:** counterfeiting. You make two pair with both hole cards; a later board card pairs the board and your hand loses value. Graded by a pokersolver showdown, with your final five cards shown in feedback.
 - 500-seed tests per skill, screenshots, `docs/progress/M2.md`. The intro order interleaves areas B and C.
 
-## Milestone 3: Area A, hands by seat
+## Milestones 3 and 4: Area A (hands by seat) and Area D (bet sizing)
 
-Needs `content/house-chart.json`, drafted from cited sources and shared with the owner before it ships. Skills A1 to A9 as listed in the PRD. Spec written when the chart is ready.
+Built in two steps. Step 1 (code) builds every mechanism against placeholder content. Step 2 (content) replaces the placeholders with the researched chart and rules, written by the owner side. Code must never hard-code a range, size or reason from the content: everything the player is taught comes from the two content files.
 
-## Milestone 4: Area D, bet sizing
+### Content files and validation
 
-Needs `content/sizing-rules.json`, drafted from cited sources. Skills D1 to D5. D1 is pure arithmetic and can come earlier. Spec written when the rules are ready.
+- `content/house-chart.json` and `content/sizing-rules.json`, imported at build time. Types in `src/content/types.ts`, a validator in `src/content/validate.ts`, both tested.
+- Top level of both files: `{ "version": 1, "draft": true, "sources": { "S1": { "title": "...", "site": "...", "url": "..." } }, ... }`.
+- While `draft` is true, content may use one placeholder source `"TBD": { "title": "Placeholder, to be replaced", "site": "", "url": "" }`, and every explainer and feedback screen for Areas A and D shows a small "Draft advice" note. A test fails if `draft` is false and any item cites `TBD` or a source ID that does not exist.
+- Validator rules: every situation and rule cites at least one source; every range string parses; within one situation no hand sits in two action buckets except through `either`; every `either` entry accepts at least two of that situation's choices; numbers are positive and every `min` is at most its `max`.
+
+### Hand range notation
+
+`src/engine/ranges.ts`, with tests. The 169 hand classes are pairs (`77`), suited (`AKs`) and offsuit (`AKo`). Range strings are comma separated tokens:
+
+- `77` one pair; `77+` that pair and every higher pair; `22-66` pairs from 22 to 66.
+- `AKs`, `AKo` one class; `AK` both. `ATs+` the kicker rises up to one below the top card (ATs, AJs, AQs, AKs). `A2s-A5s` a run of kickers.
+- Unknown tokens throw. Expansion returns hand classes; `combos(class)` is 6 for a pair, 4 suited, 12 offsuit.
+
+### Seats
+
+`src/engine/seats.ts`, with tests. Seats are counted back from the button: BTN, CO, HJ, LJ, then UTG+2, UTG+1, UTG as the table grows; plus SB and BB. A 6-player table is UTG (it plays the lojack's chart), HJ, CO, BTN, SB, BB. Use `seatNames(players)` for 6 to 9 players and `chartSeat(seat, players)`, which maps a seat to the chart row it uses (at 6 players UTG maps to LJ; at 7 UTG maps to EP and so on).
+
+### house-chart.json situations
+
+```json
+"situations": {
+  "open.EP": {
+    "title": "Folded to you in an early seat",
+    "seats": ["UTG", "UTG+1", "UTG+2"],
+    "players": [7, 9],
+    "choices": ["raise", "fold"],
+    "ranges": { "raise": "77+, AJs+, KQs, AQo+" },
+    "either": [{ "hands": "66, ATs", "accept": ["raise", "fold"] }],
+    "default": "fold",
+    "reason": "One line shown in feedback.",
+    "sources": ["S1"]
+  }
+}
+```
+
+- Situation IDs: `open.EP`, `open.LJ`, `open.HJ`, `open.CO`, `open.BTN`, `open.SB`; `limpers.early`, `limpers.late`, `limpers.SB`, `limpers.BB`; `raise.vsEarly`, `raise.vsLate`; `bb.vsRaise`.
+- Optional fields: `limpers` (for example `[1, 3]`, how many limpers the question may show), `raiser` (seats the raise can come from), `choices` from `raise`, `call`, `check`, `reraise`, `fold`. `default` is the action for any hand not listed.
+- Button labels: raise "Raise", call "Call", check "Check", reraise "Re-raise", fold "Fold".
+
+### Area A skills
+
+- **A1, name the seats:** a table picture with 6 to 9 seats, the dealer button marked, one seat highlighted. Four seat-name choices. Pure seat logic, no chart.
+- **A2, early seats:** `open.EP` at 7 to 9 players. **A3:** `open.LJ` and `open.HJ`. **A4:** `open.CO` and `open.BTN`. **A5:** `open.SB`. **A6:** the `limpers.*` situations, with 1 to 3 limpers shown. **A7:** `raise.vsEarly` and `raise.vsLate`, with the raiser's seat shown. **A8:** `bb.vsRaise`.
+- **A9, same hand, other table size:** half the questions ask which seat at a 9-player table the first seat at a 6-player table plays like (choices LJ, HJ, UTG, CO); half show a hand whose right action differs between `open.EP` and `open.LJ` and ask about the first seat at a 6-player table.
+- Hand sampling for A2 to A8: about 60% from near the boundary (`either` hands and the hands just inside and just outside each listed range in a fixed strength order), the rest across all 169 classes weighted by combos.
+- Question picture: the table with seat names, the button, the blinds, any limpers or raiser marked, your seat highlighted, your two cards (with real suits chosen by seed).
+- Feedback: right or wrong, the accepted action or actions, the situation's `reason`, the source names, and a 13 by 13 range grid for the situation (one solid colour per action, borderline hands marked with a corner dot, never stripes) with your hand outlined.
+- Prerequisites: A2 to A5 need A1; A6 needs A4; A7 needs A3 and A4; A8 needs A4; A9 needs A2 and A3. Interleave A into the intro order after the first few B and C skills.
+- Explainers say what the chart is for and how to read it. They may quote values only by reading them from the content file.
+
+### sizing-rules.json and Area D skills
+
+```json
+"rules": {
+  "D2": { "title": "Preflop raise size", "unit": "bb", "base": { "min": 4, "max": 5 }, "perLimper": 1, "reason": "...", "sources": ["S1"] },
+  "D3": { "title": "Re-raise size", "unit": "x", "inPosition": { "min": 3, "max": 3.5 }, "outOfPosition": { "min": 4, "max": 4.5 }, "reason": "...", "sources": ["S1"] },
+  "D4": { "title": "Continuation bet size", "unit": "pot", "dry": { "min": 0.25, "max": 0.5 }, "wet": { "min": 0.5, "max": 0.75 }, "reason": "...", "sources": ["S1"] },
+  "D5": { "title": "Value bet against players who call too much", "unit": "pot", "range": { "min": 0.66, "max": 1 }, "reason": "...", "sources": ["S1"] }
+}
+```
+
+The numbers above are placeholders only.
+
+- **D2:** blinds 1 and 2 chips, 0 to 3 limpers. "Raise to how many chips?" Right when inside `(base + perLimper * limpers)` times the big blind, rounded to whole chips.
+- **D3:** an opponent opens to a stated amount; you are in position (for example BTN against CO) or out of position (SB or BB against BTN). "Re-raise to how many chips?" Right inside the multiplier range times the open.
+- **D4:** a flop that is clearly dry (rainbow, unconnected, for example K 7 2 of three suits) or clearly wet (two of a suit and connected, for example J T 8 with two hearts), from a tested texture classifier in `src/engine/texture.ts`. Choices: 1/4, 1/3, 1/2, 2/3, 3/4 and full pot. Every choice inside the rule's range is right.
+- **D5:** the river, an opponent described as calling too much, your strong made hand, a stated pot. "Bet how many chips?" Right inside the range times the pot.
+- Prerequisites: D2 needs D1; D3 needs D2; D4 needs D1 and C5; D5 needs D1.
 
 ## Milestone 5: polish and QA
 
-A full playthrough on an iPhone from the Home Screen, an exploratory QA pass, an offline test, and export and import on the device. A fix list goes in `docs/progress/M5.md`.
+An exploratory QA pass, an offline test, export and import, and fixes. Known items so far: the Check button looks see-through before an answer is entered (make the disabled state look intentional), and the gold note on the felt is the weakest contrast. The owner does the real iPhone playthrough. A fix list goes in `docs/progress/M5.md`.
